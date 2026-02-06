@@ -20,7 +20,7 @@
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body { touch-action: manipulation; }
-    /* 隱藏捲軸但保留捲動功能 (選單用) */
+    /* 隱藏捲軸但保留捲動功能 (手機版用) */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
@@ -74,13 +74,12 @@
               const name = row["補助項目"] || "";
               let rawCat = row["輔具分類"] || "其他";
               
-              // 【核心修改】整合分類邏輯：視、聽、溝通、資訊全部合併
+              // 整合分類邏輯
               let displayCat = rawCat;
               if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視") || rawCat.includes("聽") || rawCat.includes("電子耳") || rawCat.includes("助聽")) {
                 displayCat = "溝通及資訊輔具";
               }
 
-              // 子分類邏輯 (保留細部標籤顯示在卡片上)
               let sub = "其他";
               if (name.includes("推車")) sub = "推車";
               else if (name.includes("輪椅") && name.includes("電動")) sub = "電動輪椅";
@@ -116,7 +115,7 @@
 
       const filteredData = useMemo(() => {
         return dataList.filter(item => {
-          const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.item_no.includes(searchTerm);
+          const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || (item.item_no && item.item_no.includes(searchTerm));
           const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
           return matchesSearch && matchesCategory;
         });
@@ -140,11 +139,11 @@
                 <input type="text" placeholder="搜尋項目、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               
-              {/* 【UI修改】分類選單改為橫向滑動，避免佔用垂直空間 */}
-              <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar py-1">
-                <button onClick={() => setSelectedCategory("All")} className={`flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white" : "bg-white border text-gray-500"}`}>全部</button>
+              {/* 【UI修改】響應式分類：手機橫滑，電腦換行展現 */}
+              <div className="flex flex-nowrap lg:flex-wrap gap-1.5 overflow-x-auto lg:overflow-visible no-scrollbar py-1">
+                <button onClick={() => setSelectedCategory("All")} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] lg:text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white" : "bg-white border text-gray-500"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] lg:text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
             </div>
