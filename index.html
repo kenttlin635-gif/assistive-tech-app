@@ -3,94 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>輔具補助查詢 PWA</title>
+    <title>身障輔具補助查詢系統</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div id="app" class="max-w-md mx-auto p-4 pb-20">
-        <header class="mb-6 text-center">
-            <h1 class="text-2xl font-bold text-blue-700">輔具費用補助基準</h1>
-            <p class="text-sm text-gray-500">資料來源：衛福部 (離線可用)</p>
-        </header>
-
-        <div class="sticky top-2 z-10 mb-4">
-            <input v-model="search" type="text" placeholder="🔍 搜尋補助項目、對象..." 
-                   class="w-full p-3 rounded-full shadow-lg border-none focus:ring-2 focus:ring-blue-500 outline-none text-lg">
-        </div>
-
-        <div v-if="loading" class="text-center py-10">資料載入中...</div>
+<body class="bg-slate-50 font-sans text-slate-900">
+    <div id="app" class="flex h-screen overflow-hidden">
         
-        <div class="space-y-4">
-            <div v-for="item in filteredData" :key="item.項次" class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">{{ item.輔具分類 }}</span>
-                    <span class="text-gray-400 text-xs">#{{ item.項次 }}</span>
-                </div>
-                <h2 class="text-lg font-bold text-gray-800">{{ item.補助項目 }}</h2>
-                <div class="grid grid-cols-3 gap-2 my-3 text-center">
-                    <div class="bg-blue-50 p-2 rounded">
-                        <div class="text-[10px] text-gray-400">一般</div>
-                        <div class="font-bold text-blue-600 text-sm">{{ item.一般戶 }}</div>
-                    </div>
-                    <div class="bg-orange-50 p-2 rounded">
-                        <div class="text-[10px] text-gray-400">中低</div>
-                        <div class="font-bold text-orange-600 text-sm">{{ item.中低收 }}</div>
-                    </div>
-                    <div class="bg-red-50 p-2 rounded">
-                        <div class="text-[10px] text-gray-400">低收</div>
-                        <div class="font-bold text-red-600 text-sm">{{ item.低收 }}</div>
-                    </div>
-                </div>
-                <div class="text-xs text-gray-600 space-y-1">
-                    <p><strong>對象：</strong>{{ item.補助對象 }}</p>
-                    <p><strong>年限：</strong>{{ item.年限 }}</p>
-                    <details class="mt-2">
-                        <summary class="text-blue-500 cursor-pointer">詳細規格與規定</summary>
-                        <div class="mt-2 p-2 bg-gray-50 rounded italic">{{ item.規格或功能規範 }}</div>
-                    </details>
+        <aside class="w-80 bg-white border-r border-slate-200 flex flex-col hidden md:flex">
+            <div class="p-4 bg-teal-700 text-white">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <span class="text-2xl">📄</span> 身障輔具補助查詢
+                </h1>
+                <p class="text-xs text-teal-100 mt-1 opacity-80">依據最新補助基準表</p>
+            </div>
+
+            <div class="p-4 border-b border-slate-100">
+                <div class="relative">
+                    <input v-model="searchQuery" type="text" placeholder="搜尋名稱、編號..." 
+                           class="w-full bg-slate-100 border-none rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-teal-500 outline-none text-sm">
+                    <span class="absolute left-3 top-2.5 opacity-40">🔍</span>
                 </div>
             </div>
-        </div>
+
+            <div class="px-4 py-2 flex gap-2 overflow-x-auto text-xs whitespace-nowrap custom-scrollbar">
+                <button @click="selectedCategory = ''" :class="!selectedCategory ? 'bg-teal-600 text-white' : 'bg-slate-100'" class="px-3 py-1 rounded-full">全部</button>
+                <button v-for="cat in categories" @click="selectedCategory = cat" 
+                        :class="selectedCategory === cat ? 'bg-teal-600 text-white' : 'bg-slate-100'" 
+                        class="px-3 py-1 rounded-full transition-colors">{{ cat }}</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto custom-scrollbar">
+                <div v-for="item in filteredList" :key="item.項次" 
+                     @click="selectedItem = item"
+                     :class="selectedItem?.項次 === item.項次 ? 'bg-teal-50 border-r-4 border-teal-600' : 'hover:bg-slate-50 border-r-4 border-transparent'"
+                     class="p-4 cursor-pointer transition-all border-b border-slate-50">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{{ item.項次 }}</span>
+                        <span class="text-[10px] text-teal-600 font-bold uppercase">{{ item.輔具分類 }}</span>
+                    </div>
+                    <div class="text-sm font-medium text-slate-700 leading-snug">{{ item.補助項目 }}</div>
+                </div>
+                <div v-if="filteredList.length === 0" class="p-10 text-center text-slate-400 text-sm">找不到相關項目</div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto bg-slate-50 custom-scrollbar p-4 md:p-8">
+            <div class="md:hidden mb-4">
+                <input v-model="searchQuery" type="text" placeholder="搜尋項目..." class="w-full p-3 rounded-xl shadow-sm border-none">
+            </div>
+
+            <div v-if="selectedItem" class="max-w-4xl mx-auto space-y-6">
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <span class="text-9xl font-bold italic">{{ selectedItem.項次 }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="bg-teal-100 text-teal-700 text-xs px-2.5 py-1 rounded-md font-bold">{{ selectedItem.輔具分類 }}</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-6">{{ selectedItem.補助項目 }}</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
+                            <div class="text-xs text-emerald-600 font-bold mb-1">一般戶 (50%)</div>
+                            <div class="text-2xl font-black text-emerald-700">{{ selectedItem.一般戶 }}</div>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
+                            <div class="text-xs text-blue-600 font-bold mb-1">中低收 (75%)</div>
+                            <div class="text-2xl font-black text-blue-700">{{ selectedItem.中低收 }}</div>
+                        </div>
+                        <div class="bg-orange-50 border border-orange-100 p-4 rounded-xl text-center">
+                            <div class="text-xs text-orange-600 font-bold mb-1">低收入 (全額)</div>
+                            <div class="text-2xl font-black text-orange-700">{{ selectedItem.低收 }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-xl">🕒</div>
+                        <div>
+                            <p class="text-xs text-slate-400">最低使用年限</p>
+                            <p class="font-bold text-slate-700">{{ selectedItem.年限 || '無資料' }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center text-xl">👤</div>
+                        <div>
+                            <p class="text-xs text-slate-400">評估人員</p>
+                            <p class="font-bold text-slate-700">{{ selectedItem.評估人員 || '不需評估' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-3 border-b border-slate-100 font-bold text-slate-600 flex items-center gap-2">
+                            <span>✅</span> 補助對象資格
+                        </div>
+                        <div class="p-6 text-slate-600 leading-relaxed text-sm whitespace-pre-line">
+                            {{ selectedItem.補助對象 }}
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-3 border-b border-slate-100 font-bold text-slate-600 flex items-center gap-2">
+                            <span>📖</span> 評估詳細規定
+                        </div>
+                        <div class="p-6 text-slate-600 leading-relaxed text-sm whitespace-pre-line">
+                            {{ selectedItem.評估規定 }}
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-3 border-b border-slate-100 font-bold text-slate-600 flex items-center gap-2">
+                            <span>⚙️</span> 規格或功能規範
+                        </div>
+                        <div class="p-6 text-slate-600 leading-relaxed text-sm whitespace-pre-line">
+                            {{ selectedItem.規格或功能規範 }}
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div v-else class="h-full flex flex-col items-center justify-center text-slate-300">
+                <div class="text-6xl mb-4">🔍</div>
+                <p>請從左側選單選擇補助項目</p>
+            </div>
+        </main>
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, watch } = Vue;
         createApp({
             setup() {
-                const data = ref([]);
-                const search = ref('');
-                const loading = ref(true);
+                const fullData = ref([]);
+                const searchQuery = ref('');
+                const selectedCategory = ref('');
+                const selectedItem = ref(null);
+                const categories = ref([]);
 
                 onMounted(() => {
-                    // 注意：這裡先抓 data.csv (等一下 GitHub Actions 會自動產生它)
                     Papa.parse("data.csv", {
                         download: true,
                         header: true,
+                        skipEmptyLines: true,
                         complete: (results) => {
-                            data.value = results.data;
-                            loading.value = false;
+                            fullData.value = results.data;
+                            // 提取不重複的分類
+                            categories.value = [...new Set(results.data.map(i => i.輔具分類).filter(Boolean))];
+                            // 預設選取第一筆
+                            if(fullData.value.length > 0) selectedItem.value = fullData.value[0];
                         }
                     });
-                    
-                    // 註冊 Service Worker (PWA)
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('sw.js');
-                    }
+                    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
                 });
 
-                const filteredData = computed(() => {
-                    if (!search.value) return data.value;
-                    const q = search.value.toLowerCase();
-                    return data.value.filter(i => 
-                        (i.補助項目 && i.補助項目.toLowerCase().includes(q)) || 
-                        (i.補助對象 && i.補助對象.toLowerCase().includes(q))
-                    );
+                const filteredList = computed(() => {
+                    return fullData.value.filter(item => {
+                        const matchSearch = !searchQuery.value || 
+                                          (item.補助項目 && item.補助項目.includes(searchQuery.value)) ||
+                                          (item.項次 && item.項次.includes(searchQuery.value));
+                        const matchCat = !selectedCategory.value || item.輔具分類 === selectedCategory.value;
+                        return matchSearch && matchCat;
+                    });
                 });
 
-                return { data, search, filteredData, loading };
+                return { fullData, searchQuery, selectedCategory, categories, selectedItem, filteredList };
             }
         }).mount('#app');
     </script>
