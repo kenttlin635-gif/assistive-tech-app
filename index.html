@@ -20,9 +20,6 @@
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body { touch-action: manipulation; }
-    /* 隱藏捲軸但保留捲動功能 (手機版用) */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -74,7 +71,6 @@
               const name = row["補助項目"] || "";
               let rawCat = row["輔具分類"] || "其他";
               
-              // 整合分類邏輯
               let displayCat = rawCat;
               if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視") || rawCat.includes("聽") || rawCat.includes("電子耳") || rawCat.includes("助聽")) {
                 displayCat = "溝通及資訊輔具";
@@ -88,7 +84,7 @@
               else if (name.includes("拐杖") || name.includes("助行") || name.includes("站立架") || name.includes("移位")) sub = "步行/移位";
               else if (name.includes("氣墊") || name.includes("座墊")) sub = "預防壓瘡";
               else if (name.includes("床")) sub = "照顧床";
-              else if (name.includes("助聽") || name.includes("聽力") || name.includes("聽書")) sub = "聽覺相關";
+              else if (name.includes("聽力") || name.includes("聽書")) sub = "聽覺相關";
               else if (name.includes("點字") || name.includes("白手杖") || name.includes("擴視")) sub = "視覺相關";
               else if (name.includes("斜坡") || name.includes("扶手")) sub = "居家無障礙";
               else if (name.includes("壓力衣")) sub = "壓力衣";
@@ -139,11 +135,11 @@
                 <input type="text" placeholder="搜尋項目、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               
-              {/* 【UI修改】響應式分類：手機橫滑，電腦換行展現 */}
-              <div className="flex flex-nowrap lg:flex-wrap gap-1.5 overflow-x-auto lg:overflow-visible no-scrollbar py-1">
-                <button onClick={() => setSelectedCategory("All")} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] lg:text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
+              {/* 【UI修改】不論手機或電腦，分類標籤全部改為「換行展開」 */}
+              <div className="flex flex-wrap gap-1.5 py-1">
+                <button onClick={() => setSelectedCategory("All")} className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] lg:text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
             </div>
