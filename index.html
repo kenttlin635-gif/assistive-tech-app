@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>輔具補助查詢 PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="max-w-md mx-auto p-4 pb-20">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-blue-700">輔具費用補助基準</h1>
+            <p class="text-sm text-gray-500">資料來源：衛福部 (離線可用)</p>
+        </header>
+
+        <div class="sticky top-2 z-10 mb-4">
+            <input v-model="search" type="text" placeholder="🔍 搜尋補助項目、對象..." 
+                   class="w-full p-3 rounded-full shadow-lg border-none focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+        </div>
+
+        <div v-if="loading" class="text-center py-10">資料載入中...</div>
+        
+        <div class="space-y-4">
+            <div v-for="item in filteredData" :key="item.項次" class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">{{ item.輔具分類 }}</span>
+                    <span class="text-gray-400 text-xs">#{{ item.項次 }}</span>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800">{{ item.補助項目 }}</h2>
+                <div class="grid grid-cols-3 gap-2 my-3 text-center">
+                    <div class="bg-blue-50 p-2 rounded">
+                        <div class="text-[10px] text-gray-400">一般</div>
+                        <div class="font-bold text-blue-600 text-sm">{{ item.一般戶 }}</div>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded">
+                        <div class="text-[10px] text-gray-400">中低</div>
+                        <div class="font-bold text-orange-600 text-sm">{{ item.中低收 }}</div>
+                    </div>
+                    <div class="bg-red-50 p-2 rounded">
+                        <div class="text-[10px] text-gray-400">低收</div>
+                        <div class="font-bold text-red-600 text-sm">{{ item.低收 }}</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-600 space-y-1">
+                    <p><strong>對象：</strong>{{ item.補助對象 }}</p>
+                    <p><strong>年限：</strong>{{ item.年限 }}</p>
+                    <details class="mt-2">
+                        <summary class="text-blue-500 cursor-pointer">詳細規格與規定</summary>
+                        <div class="mt-2 p-2 bg-gray-50 rounded italic">{{ item.規格或功能規範 }}</div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        createApp({
+            setup() {
+                const data = ref([]);
+                const search = ref('');
+                const loading = ref(true);
+
+                onMounted(() => {
+                    // 注意：這裡先抓 data.csv (等一下 GitHub Actions 會自動產生它)
+                    Papa.parse("data.csv", {
+                        download: true,
+                        header: true,
+                        complete: (results) => {
+                            data.value = results.data;
+                            loading.value = false;
+                        }
+                    });
+                    
+                    // 註冊 Service Worker (PWA)
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('sw.js');
+                    }
+                });
+
+                const filteredData = computed(() => {
+                    if (!search.value) return data.value;
+                    const q = search.value.toLowerCase();
+                    return data.value.filter(i => 
+                        (i.補助項目 && i.補助項目.toLowerCase().includes(q)) || 
+                        (i.補助對象 && i.補助對象.toLowerCase().includes(q))
+                    );
+                });
+
+                return { data, search, filteredData, loading };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
