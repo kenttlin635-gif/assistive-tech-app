@@ -26,6 +26,7 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     
+    /* 修正 1：電腦版浮水印垂直置中，避免被切到 */
     .bg-number-watermark {
       position: absolute; top: -1rem; right: 1rem; 
       font-size: 7rem; font-weight: 900; font-style: italic;
@@ -33,7 +34,14 @@
       line-height: 1; z-index: 0;
       pointer-events: none;
     }
-    @media (min-width: 1024px) { .bg-number-watermark { font-size: 9rem; top: -1.5rem; right: 2rem; } }
+    @media (min-width: 1024px) { 
+      .bg-number-watermark { 
+        font-size: 10rem; 
+        top: 50%; 
+        right: 2rem;
+        transform: translateY(-50%);
+      } 
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-left">
@@ -49,10 +57,10 @@
     const Menu = ({ className }) => <IconWrapper className={className}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
     const X = ({ className }) => <IconWrapper className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
     const Clock = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconWrapper>;
-    const UserCheck = ({ className }) => <IconWrapper className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></IconWrapper>;
+    const UserCheck = ({ className }) => <IconWrapper className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></IconWrapper>;
     const CheckSquare = ({ className }) => <IconWrapper className={className}><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
     const BookOpen = ({ className }) => <IconWrapper className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconWrapper>;
-    const Settings = ({ className }) => <IconWrapper className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconWrapper>;
+    const Settings = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></IconWrapper>;
     const AlertTriangle = ({ className }) => <IconWrapper className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconWrapper>;
 
     const AssistiveDeviceSubsidy = () => {
@@ -109,8 +117,8 @@
 
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="p-5 border-b bg-teal-700 text-white shadow-sm">
-              <h1 className="text-lg font-bold">身障輔具&無障礙補助查詢</h1>
-              <div className="text-[10px] opacity-70 mt-1">112年最新基準表</div>
+              <h1 className="text-lg font-bold text-left">身障輔具&無障礙補助查詢</h1>
+              <div className="text-[10px] opacity-70 mt-1 text-left">112年最新基準表</div>
             </div>
             
             <div className="p-3 border-b space-y-3 bg-gray-50">
@@ -141,7 +149,7 @@
 
           <main className="flex-1 flex flex-col h-full overflow-hidden w-full bg-gray-100">
             <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between shadow-sm z-10">
-              <h2 className="font-bold text-gray-800 text-sm truncate">{selectedItem?.name}</h2>
+              <h2 className="font-bold text-gray-800 text-sm truncate text-left">{selectedItem?.name}</h2>
               <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600"><Menu className="w-6 h-6" /></button>
             </div>
 
@@ -149,49 +157,46 @@
               {selectedItem && (
                 <div className="max-w-7xl mx-auto space-y-4">
                   
-                  {/* Header：帶有淡綠色浮水印 */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8 relative overflow-hidden flex flex-col gap-2">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:p-6 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="bg-number-watermark">{selectedItem.item_no}</div>
-                    <div className="relative z-10">
+                    <div className="relative z-10 flex-1">
                       <span className="bg-teal-600 text-white text-[10px] lg:text-xs px-2 py-0.5 rounded font-bold inline-block mb-1 shadow-sm uppercase">{selectedItem.category}</span>
                       <h2 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-800 leading-tight">{selectedItem.name}</h2>
                     </div>
-                  </div>
 
-                  {/* 核心資訊與金額整合列：電腦版橫向並排，手機版分開 */}
-                  <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch">
-                    
-                    {/* 第一區塊：年限與評估人員 */}
-                    <div className="flex flex-row gap-3 flex-none">
-                      <div className="bg-white px-4 py-4 rounded-xl flex flex-col items-center justify-center border border-indigo-100 shadow-sm min-w-[100px] lg:min-w-[140px]">
-                        <span className="text-[10px] lg:text-xs font-bold text-indigo-400 uppercase mb-1">年限</span>
-                        <div className="text-base lg:text-lg font-black text-indigo-900">{selectedItem.min_years} 年</div>
-                      </div>
-                      <div className="bg-white px-4 py-4 rounded-xl flex flex-col items-center justify-center border border-rose-100 shadow-sm min-w-[100px] lg:min-w-[140px]">
-                        <span className="text-[10px] lg:text-xs font-bold text-rose-400 uppercase mb-1">評估人員</span>
-                        <div className="text-base lg:text-lg font-black text-rose-900">{selectedItem.assessment_personnel}</div>
-                      </div>
-                    </div>
-
-                    {/* 小區分線：僅電腦版顯示 */}
-                    <div className="hidden lg:block w-px bg-gray-200 mx-1 my-2"></div>
-
-                    {/* 第二區塊：補助金額 (手機版並排，內容上下) */}
-                    <div className="grid grid-cols-3 gap-2 lg:gap-3 flex-1">
-                      {[
-                        { label: "一般戶", val: selectedItem.subsidy.general, border: "border-emerald-200", text: "text-emerald-700", valColor: "text-emerald-500" },
-                        { label: "中低收", val: selectedItem.subsidy.mid, border: "border-blue-200", text: "text-blue-700", valColor: "text-blue-500" },
-                        { label: "低收入", val: selectedItem.subsidy.low, border: "border-amber-200", text: "text-amber-700", valColor: "text-amber-500" }
-                      ].map((s, idx) => (
-                        <div key={idx} className={`bg-white px-2 py-4 rounded-xl border-2 ${s.border} shadow-sm flex flex-col items-center justify-center`}>
-                          <div className={`text-base lg:text-lg font-black ${s.text} mb-1 text-center`}>{s.label}</div>
-                          <div className={`text-lg lg:text-3xl font-black ${s.valColor} tracking-tight text-center`}>{s.val}</div>
+                    {/* 修正 3：手機版加入 w-full 讓其填滿寬度，電腦版維持 w-auto */}
+                    <div className="relative z-10 flex flex-row gap-2 lg:gap-4 w-full lg:w-auto">
+                      {/* 修正 2：電腦版字體加大 (lg:text-sm 標籤, lg:text-2xl 數值) */}
+                      <div className="bg-indigo-50 px-3 py-2 rounded-xl flex items-center gap-3 border border-indigo-100 shadow-sm flex-1 lg:flex-none lg:min-w-[160px]">
+                        <Clock className="w-5 h-5 lg:w-7 lg:h-7 text-indigo-500" />
+                        <div className="text-left">
+                          <span className="text-[10px] lg:text-sm font-bold text-indigo-400 block mb-0.5">年限</span>
+                          <div className="text-sm lg:text-2xl font-black text-indigo-900">{selectedItem.min_years} 年</div>
                         </div>
-                      ))}
+                      </div>
+                      <div className="bg-rose-50 px-3 py-2 rounded-xl flex items-center gap-3 border border-rose-100 shadow-sm flex-1 lg:flex-none lg:min-w-[160px]">
+                        <UserCheck className="w-5 h-5 lg:w-7 lg:h-7 text-rose-500" />
+                        <div className="text-left">
+                          <span className="text-[10px] lg:text-sm font-bold text-rose-400 block mb-0.5">評估人員</span>
+                          <div className="text-sm lg:text-2xl font-black text-rose-900">{selectedItem.assessment_personnel}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* 詳細規定區塊 */}
+                  <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 lg:gap-4">
+                    {[
+                      { label: "一般戶", val: selectedItem.subsidy.general, border: "border-emerald-200", text: "text-emerald-700", valColor: "text-emerald-500" },
+                      { label: "中低收", val: selectedItem.subsidy.mid, border: "border-blue-200", text: "text-blue-700", valColor: "text-blue-500" },
+                      { label: "低收入", val: selectedItem.subsidy.low, border: "border-amber-200", text: "text-amber-700", valColor: "text-amber-500" }
+                    ].map((s, idx) => (
+                      <div key={idx} className={`bg-white px-2 py-4 lg:py-5 rounded-xl border-2 ${s.border} shadow-sm flex flex-col items-center justify-center`}>
+                        <div className={`text-base lg:text-xl font-black ${s.text} mb-1 uppercase text-center`}>{s.label}</div>
+                        <div className={`text-lg lg:text-3xl font-black ${s.valColor} tracking-tight text-center`}>{s.val}</div>
+                      </div>
+                    ))}
+                  </div>
+
                   <div className="flex flex-col gap-5 pt-2">
                     {[
                       { title: "補助對象", icon: CheckSquare, content: selectedItem.target, bg: "bg-blue-50/20" },
