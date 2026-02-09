@@ -25,13 +25,15 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-    .bg-number-watermark {
-      position: absolute; top: 0; right: 0; 
-      font-size: 8rem; font-weight: 900; font-style: italic;
-      color: rgba(0,0,0,0.03); line-height: 1; z-index: 0;
-      pointer-events: none;
+    
+    /* 移除背景浮水印，改為乾淨背景 */
+    .highlight-mark { 
+      background-color: #fef08a; 
+      color: #164e63; 
+      padding: 0.1rem 0.2rem; 
+      border-radius: 0.2rem; 
+      font-weight: bold; 
     }
-    .highlight-mark { background-color: #fef08a; color: #164e63; padding: 0.1rem 0.2rem; border-radius: 0.2rem; font-weight: bold; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -100,7 +102,7 @@
         });
       }, [searchTerm, selectedCategory, dataList]);
 
-      if (loading) return <div className="h-screen flex items-center justify-center text-teal-700 font-bold">資料同步中...</div>;
+      if (loading) return <div className="h-screen flex items-center justify-center text-teal-700 font-bold tracking-widest">資料讀取中...</div>;
 
       return (
         <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
@@ -139,95 +141,72 @@
               <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600"><Menu className="w-6 h-6" /></button>
             </div>
 
-            <section className="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar">
+            <section className="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar">
               {selectedItem && (
-                <div className="max-w-7xl mx-auto space-y-4">
-                  {/* Header: 電腦版顯著放大右上角資訊 */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-6 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="bg-number-watermark">{selectedItem.item_no}</div>
-                    <div className="relative z-10 flex-1">
-                      <span className="bg-teal-600 text-white text-[10px] lg:text-sm px-3 py-1 rounded-lg font-bold inline-block mb-2">{selectedItem.category}</span>
-                      <h2 className="text-xl md:text-3xl font-black text-slate-800 leading-tight">{getHighlightedText(selectedItem.name, searchTerm)}</h2>
+                /* 修改：max-w-6xl 增加電腦版顯示寬度，並回歸單欄堆疊 */
+                <div className="max-w-6xl mx-auto space-y-6">
+                  
+                  {/* Header: 將項次整合進標題，移除浮水印 */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8 relative overflow-hidden flex flex-col gap-6">
+                    <div className="relative z-10">
+                      <span className="bg-teal-600 text-white text-[10px] lg:text-sm px-3 py-1 rounded-lg font-bold inline-block mb-3 shadow-sm">{selectedItem.category}</span>
+                      {/* 項次整合進標題 */}
+                      <h2 className="text-2xl md:text-4xl font-black text-slate-800 leading-tight">
+                        {selectedItem.item_no}. {getHighlightedText(selectedItem.name, searchTerm)}
+                      </h2>
                     </div>
-                    {/* 右上角卡片強化 */}
-                    <div className="relative z-10 flex flex-row lg:flex-row gap-3">
-                      <div className="bg-indigo-50 px-4 py-3 lg:px-6 lg:py-4 rounded-xl flex items-center gap-3 border border-indigo-100 shadow-sm min-w-[130px] lg:min-w-[160px]">
-                        <Clock className="w-5 h-5 lg:w-7 lg:h-7 text-indigo-500" />
+
+                    {/* 下方資訊條：在電腦版也保持顯眼但整齊 */}
+                    <div className="relative z-10 flex flex-row gap-4">
+                      <div className="bg-indigo-50 px-5 py-4 rounded-2xl flex items-center gap-4 border border-indigo-100 shadow-sm flex-1 lg:flex-none lg:min-w-[200px]">
+                        <Clock className="w-6 h-6 lg:w-8 lg:h-8 text-indigo-500" />
                         <div>
-                          <span className="text-[10px] lg:text-sm font-bold text-gray-500 block uppercase">最低年限</span>
-                          <div className="text-sm lg:text-xl font-black text-gray-700">{selectedItem.min_years} 年</div>
+                          <span className="text-xs lg:text-sm font-bold text-gray-500 block mb-1">最低使用年限</span>
+                          <div className="text-base lg:text-2xl font-black text-gray-700">{selectedItem.min_years} 年</div>
                         </div>
                       </div>
-                      <div className="bg-rose-50 px-4 py-3 lg:px-6 lg:py-4 rounded-xl flex items-center gap-3 border border-rose-100 shadow-sm min-w-[130px] lg:min-w-[160px]">
-                        <UserCheck className="w-5 h-5 lg:w-7 lg:h-7 text-rose-500" />
+                      <div className="bg-rose-50 px-5 py-4 rounded-2xl flex items-center gap-4 border border-rose-100 shadow-sm flex-1 lg:flex-none lg:min-w-[200px]">
+                        <UserCheck className="w-6 h-6 lg:w-8 lg:h-8 text-rose-500" />
                         <div>
-                          <span className="text-[10px] lg:text-sm font-bold text-gray-500 block uppercase">評估人員</span>
-                          <div className="text-sm lg:text-xl font-black text-gray-700">{selectedItem.assessment_personnel}</div>
+                          <span className="text-xs lg:text-sm font-bold text-gray-500 block mb-1">評估人員</span>
+                          <div className="text-base lg:text-2xl font-black text-gray-700">{selectedItem.assessment_personnel}</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4">
+                  {/* 金額區：電腦版維持三欄並排但更寬大 */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {[
                       { label: "一般戶 (50%)", val: selectedItem.subsidy.general, color: "emerald" },
                       { label: "中低收 (75%)", val: selectedItem.subsidy.mid, color: "blue" },
                       { label: "低收入 (全額)", val: selectedItem.subsidy.low, color: "amber" }
                     ].map((s, idx) => (
-                      <div key={idx} className={`bg-white px-4 py-3 lg:py-4 rounded-2xl border border-${s.color}-100 shadow-sm flex lg:flex-col items-center lg:justify-center justify-between`}>
-                        <div className={`text-xs md:text-base font-black text-${s.color}-700 lg:mb-1 uppercase tracking-tight`}>{s.label}</div>
-                        <div className={`text-lg md:text-3xl font-black text-${s.color}-500 tracking-tight`}>{s.val}</div>
+                      <div key={idx} className={`bg-white px-6 py-5 lg:py-8 rounded-2xl border border-${s.color}-100 shadow-sm flex lg:flex-col items-center lg:justify-center justify-between`}>
+                        <div className={`text-base lg:text-xl font-black text-${s.color}-700 lg:mb-2 uppercase`}>{s.label}</div>
+                        <div className={`text-xl lg:text-4xl font-black text-${s.color}-500 tracking-tight`}>{s.val}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* 【核心改進】分欄佈局優化留白問題 */}
-                  <div className="lg:flex lg:flex-row lg:gap-6 space-y-4 lg:space-y-0">
-                    {/* 左欄：對象 + 規格 */}
-                    <div className="lg:w-1/2 space-y-4 lg:space-y-6">
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                        <div className="bg-teal-600 px-4 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
-                          <CheckSquare className="w-5 h-5 text-white" />
-                          <h3 className="font-black text-white text-base md:text-lg tracking-wider">補助對象</h3>
+                  {/* 內容區：回歸單欄堆疊，避免左右不對齊 */}
+                  <div className="flex flex-col gap-6">
+                    {[
+                      { title: "補助對象", icon: CheckSquare, content: selectedItem.target, bg: "bg-blue-50/20" },
+                      { title: "評估規定", icon: BookOpen, content: selectedItem.assessment_rule, bg: "bg-white" },
+                      { title: "規格或功能規範", icon: Settings, content: selectedItem.specs, bg: "bg-slate-50/50" },
+                      { title: "其他規定", icon: AlertTriangle, content: selectedItem.other_rule, bg: "bg-white" }
+                    ].map((box, idx) => (
+                      <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="bg-teal-600 px-6 py-3.5 flex items-center gap-4 border-l-[12px] border-teal-800">
+                          <box.icon className="w-6 h-6 text-white" />
+                          <h3 className="font-black text-white text-base lg:text-xl tracking-widest">{box.title}</h3>
                         </div>
-                        <div className="p-5 bg-blue-50/20 text-blue-950 text-sm md:text-base whitespace-pre-line leading-relaxed">
-                          {getHighlightedText(selectedItem.target, searchTerm)}
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                        <div className="bg-teal-600 px-4 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
-                          <Settings className="w-5 h-5 text-white" />
-                          <h3 className="font-black text-white text-base md:text-lg tracking-wider">規格或功能規範</h3>
-                        </div>
-                        <div className="p-5 bg-slate-50/50 text-gray-800 text-sm md:text-base whitespace-pre-line leading-relaxed">
-                          {getHighlightedText(selectedItem.specs, searchTerm)}
+                        <div className={`p-6 lg:p-10 ${box.bg} text-gray-800 text-base lg:text-lg whitespace-pre-line leading-relaxed`}>
+                          {getHighlightedText(box.content, searchTerm)}
                         </div>
                       </div>
-                    </div>
-
-                    {/* 右欄：評估 + 其他 */}
-                    <div className="lg:w-1/2 space-y-4 lg:space-y-6">
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                        <div className="bg-teal-600 px-4 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
-                          <BookOpen className="w-5 h-5 text-white" />
-                          <h3 className="font-black text-white text-base md:text-lg tracking-wider">評估規定</h3>
-                        </div>
-                        <div className="p-5 text-gray-800 text-sm md:text-base whitespace-pre-line leading-relaxed">
-                          {getHighlightedText(selectedItem.assessment_rule, searchTerm)}
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                        <div className="bg-teal-600 px-4 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
-                          <AlertTriangle className="w-5 h-5 text-white" />
-                          <h3 className="font-black text-white text-base md:text-lg tracking-wider">其他規定</h3>
-                        </div>
-                        <div className="p-5 text-gray-800 text-sm md:text-base whitespace-pre-line leading-relaxed">
-                          {getHighlightedText(selectedItem.other_rule, searchTerm)}
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               )}
