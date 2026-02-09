@@ -1,8 +1,8 @@
 name: 同步試算表資料
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天午夜同步
-  workflow_dispatch:      # 允許手動點擊同步
+    - cron: '0 0 * * *'  # 每天午夜檢查一次
+  workflow_dispatch:      # 也保留手動點擊
 
 jobs:
   build:
@@ -13,13 +13,18 @@ jobs:
 
       - name: 下載最新的 CSV
         run: |
-          # 請將下面的 URL 替換成你在「階段一」複製的 CSV 連結
-          curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvy-kOyofS0g9Z0Mrt7TVKHT_LdgwEyIc7eCdrFm7b0euMRag4SMy_ND_QvlNcrmxmHmYvA77KEgsY/pub?output=csv" -o data.csv
+          curl -L "你的_CSV_連結" -o data.csv
 
-      - name: 自動提交資料更新
+      - name: 檢查是否有變動並提交
         run: |
           git config --global user.name "DataBot"
           git config --global user.email "bot@github.com"
           git add data.csv
-          git commit -m "自動更新補助資料" || exit 0
-          git push
+          # 關鍵步驟：檢查 data.csv 是否跟舊的一樣
+          # 如果沒有變動，這行會安靜地結束，不會產生新的 commit
+          if git diff --staged --quiet; then
+            echo "資料沒有變動，跳過提交。"
+          else
+            git commit -m "自動更新補助資料 (偵測到變動)"
+            git push
+          fi
