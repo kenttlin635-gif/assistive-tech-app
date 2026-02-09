@@ -127,33 +127,37 @@
                 <input type="text" placeholder="搜尋名稱、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div className="flex flex-wrap gap-2 py-1">
-                <button onClick={() => setSelectedCategory("All")} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-600 hover:bg-gray-100"}`}>全部</button>
+                <button onClick={() => setSelectedCategory("All")} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
                 {categories.map(cat => (
                   <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
             </div>
 
-            {/* 側邊欄清單：項次放大並與名稱並排 */}
-            <nav className="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50 custom-scrollbar">
+            {/* 側邊欄清單修正：項次與名稱垂直置中並增加區隔線 */}
+            <nav className="flex-1 overflow-y-auto p-0 bg-gray-50 custom-scrollbar">
               {filteredData.map((item) => (
                 <button 
                   key={item.id} 
                   onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} 
-                  className={`w-full text-left py-2 px-3 rounded-lg flex flex-row items-start gap-3 transition-all border-l-4 ${
+                  className={`w-full text-left py-3 px-4 flex flex-row items-center gap-4 transition-all border-b border-slate-200 ${
                     selectedItem?.id === item.id 
-                    ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5 z-10' 
-                    : 'hover:bg-white border-transparent text-gray-600'
+                    ? 'bg-white border-l-8 border-l-teal-600 shadow-inner z-10' 
+                    : 'bg-gray-50 hover:bg-white border-l-8 border-l-transparent'
                   }`}
                 >
-                  {/* 項次數字區域：放大、並排、固定寬度 */}
-                  <div className="flex-shrink-0 mt-0.5">
-                    <span className="font-mono font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-sm min-w-[36px] text-center inline-block">
+                  {/* 項次數字區域：正方形圖標、垂直置中 */}
+                  <div className="flex-shrink-0">
+                    <span className={`w-9 h-9 flex items-center justify-center font-mono font-bold rounded-lg text-sm shadow-sm transition-colors ${
+                      selectedItem?.id === item.id 
+                      ? 'bg-teal-600 text-white' 
+                      : 'bg-slate-200 text-slate-600'
+                    }`}>
                       {item.item_no}
                     </span>
                   </div>
-                  {/* 名稱區域：自動換行 */}
-                  <div className={`text-sm font-bold break-words leading-snug flex-1 ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
+                  {/* 名稱區域：垂直置中對齊 */}
+                  <div className={`text-sm font-bold break-words leading-snug flex-1 ${selectedItem?.id === item.id ? 'text-teal-900' : 'text-slate-600'}`}>
                     {item.name}
                   </div>
                 </button>
