@@ -106,7 +106,7 @@
         });
       }, [searchTerm, selectedCategory, dataList]);
 
-      if (loading) return <div className="h-screen flex items-center justify-center text-teal-700 font-bold">資料同步中...</div>;
+      if (loading) return <div className="h-screen flex items-center justify-center text-teal-700 font-bold tracking-widest">資料同步中...</div>;
 
       return (
         <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
@@ -114,8 +114,8 @@
 
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="p-5 border-b bg-teal-700 text-white">
-              <h1 className="text-xl font-bold flex items-center gap-2 leading-tight">
-                <FileText className="w-6 h-6 flex-shrink-0" /> 
+              <h1 className="text-lg font-bold flex items-center gap-2 leading-tight tracking-tight">
+                <FileText className="w-5 h-5 flex-shrink-0" /> 
                 身障輔具&無障礙補助查詢
               </h1>
               <div className="flex justify-between items-center mt-1 text-[10px] opacity-70"><span>112年最新基準表</span><button onClick={() => setIsSidebarOpen(false)} className="lg:hidden"><X className="w-4 h-4" /></button></div>
@@ -134,32 +134,13 @@
               </div>
             </div>
 
-            {/* 側邊欄清單修正：項次與名稱垂直置中並增加區隔線 */}
             <nav className="flex-1 overflow-y-auto p-0 bg-gray-50 custom-scrollbar">
               {filteredData.map((item) => (
-                <button 
-                  key={item.id} 
-                  onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} 
-                  className={`w-full text-left py-3 px-4 flex flex-row items-center gap-4 transition-all border-b border-slate-200 ${
-                    selectedItem?.id === item.id 
-                    ? 'bg-white border-l-8 border-l-teal-600 shadow-inner z-10' 
-                    : 'bg-gray-50 hover:bg-white border-l-8 border-l-transparent'
-                  }`}
-                >
-                  {/* 項次數字區域：正方形圖標、垂直置中 */}
+                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left py-3 px-4 flex flex-row items-center gap-4 transition-all border-b border-slate-200 ${selectedItem?.id === item.id ? 'bg-white border-l-8 border-l-teal-600 shadow-sm z-10' : 'bg-white hover:bg-slate-50 border-l-8 border-l-transparent'}`}>
                   <div className="flex-shrink-0">
-                    <span className={`w-9 h-9 flex items-center justify-center font-mono font-bold rounded-lg text-sm shadow-sm transition-colors ${
-                      selectedItem?.id === item.id 
-                      ? 'bg-teal-600 text-white' 
-                      : 'bg-slate-200 text-slate-600'
-                    }`}>
-                      {item.item_no}
-                    </span>
+                    <span className={`w-10 h-10 flex items-center justify-center font-mono font-bold rounded-md text-base shadow-sm transition-colors ${selectedItem?.id === item.id ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600'}`}>{item.item_no}</span>
                   </div>
-                  {/* 名稱區域：垂直置中對齊 */}
-                  <div className={`text-sm font-bold break-words leading-snug flex-1 ${selectedItem?.id === item.id ? 'text-teal-900' : 'text-slate-600'}`}>
-                    {item.name}
-                  </div>
+                  <div className={`text-sm font-bold break-words leading-tight flex-1 ${selectedItem?.id === item.id ? 'text-teal-900' : 'text-slate-600'}`}>{item.name}</div>
                 </button>
               ))}
             </nav>
@@ -173,40 +154,49 @@
 
             <section className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
               {selectedItem && (
-                <div className="max-w-4xl mx-auto space-y-5 pb-10">
+                <div className="max-w-4xl mx-auto space-y-6 pb-10">
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 relative overflow-hidden">
                     <div className="bg-number-watermark">{selectedItem.item_no}</div>
                     <div className="relative z-10">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="bg-teal-600 text-white text-[10px] px-2.5 py-1 rounded-lg font-bold">{selectedItem.category}</span>
+                        {/* 修正 1：大分類標籤文字放大 (text-sm) */}
+                        <span className="bg-teal-600 text-white text-sm px-3.5 py-1.5 rounded-lg font-bold shadow-sm">{selectedItem.category}</span>
                       </div>
                       <h2 className="text-2xl md:text-3xl font-black text-slate-800 leading-tight">{selectedItem.name}</h2>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 md:gap-4">
+                    {/* 修正 2：一般戶/中低收/低收標籤放大 (text-base + font-black) */}
                     <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-emerald-600 mb-1 tracking-widest">一般戶</div>
-                      <div className="text-lg md:text-2xl font-black text-emerald-500">{selectedItem.subsidy.general}</div>
+                      <div className="text-sm md:text-base font-black text-emerald-700 mb-2 tracking-tighter">一般戶</div>
+                      <div className="text-lg md:text-2xl font-black text-emerald-500 tracking-tight">{selectedItem.subsidy.general}</div>
                     </div>
                     <div className="bg-white p-3 rounded-2xl border border-blue-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-blue-600 mb-1 tracking-widest">中低收</div>
-                      <div className="text-lg md:text-2xl font-black text-blue-500">{selectedItem.subsidy.mid}</div>
+                      <div className="text-sm md:text-base font-black text-blue-700 mb-2 tracking-tighter">中低收</div>
+                      <div className="text-lg md:text-2xl font-black text-blue-500 tracking-tight">{selectedItem.subsidy.mid}</div>
                     </div>
                     <div className="bg-white p-3 rounded-2xl border border-amber-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-amber-600 mb-1 tracking-widest">低收入</div>
-                      <div className="text-lg md:text-2xl font-black text-amber-500">{selectedItem.subsidy.low}</div>
+                      <div className="text-sm md:text-base font-black text-amber-700 mb-2 tracking-tighter">低收入</div>
+                      <div className="text-lg md:text-2xl font-black text-amber-500 tracking-tight">{selectedItem.subsidy.low}</div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 md:gap-4">
+                    {/* 修正 3：使用年限/評估人員標籤放大 (text-sm + text-gray-600) */}
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-indigo-50 rounded-xl text-indigo-500"><Clock className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase">使用年限</span><div className="text-sm font-black text-gray-700">{selectedItem.min_years} 年</div></div>
+                      <div>
+                        <span className="text-xs md:text-sm font-black text-gray-600 block mb-1">使用年限</span>
+                        <div className="text-sm md:text-lg font-black text-gray-800">{selectedItem.min_years} 年</div>
+                      </div>
                     </div>
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-rose-50 rounded-xl text-rose-500"><UserCheck className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase">評估人員</span><div className="text-sm font-black text-gray-700">{selectedItem.assessment_personnel}</div></div>
+                      <div>
+                        <span className="text-xs md:text-sm font-black text-gray-600 block mb-1">評估人員</span>
+                        <div className="text-sm md:text-lg font-black text-gray-800">{selectedItem.assessment_personnel}</div>
+                      </div>
                     </div>
                   </div>
 
