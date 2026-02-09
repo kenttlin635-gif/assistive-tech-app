@@ -13,7 +13,7 @@ jobs:
 
       - name: 下載最新的 CSV
         run: |
-          curl -L "你的_CSV_連結" -o data.csv
+          curl -L "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvy-kOyofS0g9Z0Mrt7TVKHT_LdgwEyIc7eCdrFm7b0euMRag4SMy_ND_QvlNcrmxmHmYvA77KEgsY/pubhtml" -o data.csv
 
       - name: 檢查是否有變動並提交
         run: |
