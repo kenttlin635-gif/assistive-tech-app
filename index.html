@@ -112,35 +112,35 @@
         <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
           {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
-          {/* 修正 1：側邊欄標題與緊湊佈局 */}
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-            <div className="p-4 border-b bg-teal-700 text-white">
-              <h1 className="text-lg font-bold flex items-center gap-2 leading-tight tracking-tight">
-                <FileText className="w-5 h-5 flex-shrink-0" /> 
+            <div className="p-5 border-b bg-teal-700 text-white">
+              <h1 className="text-xl font-bold flex items-center gap-2 leading-tight">
+                <FileText className="w-6 h-6 flex-shrink-0" /> 
                 身障輔具&無障礙補助查詢
               </h1>
               <div className="flex justify-between items-center mt-1 text-[10px] opacity-70"><span>112年最新基準表</span><button onClick={() => setIsSidebarOpen(false)} className="lg:hidden"><X className="w-4 h-4" /></button></div>
             </div>
 
-            <div className="p-3 border-b space-y-2 bg-gray-50 text-xs">
+            <div className="p-3 border-b space-y-3 bg-gray-50">
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400" />
-                <input type="text" placeholder="搜尋項目、項次..." className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <input type="text" placeholder="搜尋名稱、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
-              <div className="flex flex-wrap gap-1">
-                <button onClick={() => setSelectedCategory("All")} className={`px-2 py-0.5 rounded-full font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500"}`}>全部</button>
+              {/* 大分類標籤：還原間距 (gap-2, px-3 py-1) */}
+              <div className="flex flex-wrap gap-2 py-1">
+                <button onClick={() => setSelectedCategory("All")} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2 py-0.5 rounded-full font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
             </div>
 
-            {/* 修正 2：更緊湊的側邊欄清單 (p-2.5) */}
+            {/* 小項目清單：改為緊湊排版 (py-1.5 px-3) */}
             <nav className="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50 custom-scrollbar">
               {filteredData.map((item) => (
-                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left p-2.5 rounded-lg flex flex-col transition-all border-l-4 ${selectedItem?.id === item.id ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5' : 'hover:bg-white border-transparent text-gray-600'}`}>
-                  <div className="mb-1">
-                    <span className="font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded text-[10px]">{item.item_no}</span>
+                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left py-1.5 px-3 rounded-lg flex flex-col transition-all border-l-4 ${selectedItem?.id === item.id ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5' : 'hover:bg-white border-transparent text-gray-600'}`}>
+                  <div className="mb-0.5">
+                    <span className="font-bold bg-gray-200 text-gray-500 px-1.5 py-0.2 rounded text-[9px]">{item.item_no}</span>
                   </div>
                   <div className={`text-sm font-bold break-words leading-tight ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
                     {item.name}
@@ -187,43 +187,46 @@
                   <div className="grid grid-cols-2 gap-2 md:gap-4">
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-indigo-50 rounded-xl text-indigo-500"><Clock className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase tracking-tighter">使用年限</span><div className="text-sm font-black text-gray-700">{selectedItem.min_years} 年</div></div>
+                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase">使用年限</span><div className="text-sm font-black text-gray-700">{selectedItem.min_years} 年</div></div>
                     </div>
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-rose-50 rounded-xl text-rose-500"><UserCheck className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase tracking-tighter">評估人員</span><div className="text-sm font-black text-gray-700">{selectedItem.assessment_personnel}</div></div>
+                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase">評估人員</span><div className="text-sm font-black text-gray-700">{selectedItem.assessment_personnel}</div></div>
                     </div>
                   </div>
 
-                  {/* 修正 3：更顯眼的欄位主題標題 (Title) */}
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
-                        <CheckSquare className="w-5 h-5 text-teal-700" />
-                        <h3 className="font-black text-teal-900 text-base md:text-lg">補助對象</h3>
+                  {/* 右側內容主題標題：強化對比 (bg-teal-600, text-white, border-l-8) */}
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
+                        <CheckSquare className="w-5 h-5 text-white" />
+                        <h3 className="font-black text-white text-base md:text-lg tracking-wider">補助對象</h3>
                       </div>
-                      <div className="p-6 bg-blue-50/30 text-blue-900 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.target}</div>
+                      <div className="p-6 bg-blue-50/20 text-blue-950 text-base md:text-lg whitespace-pre-line leading-relaxed">{selectedItem.target}</div>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
-                        <BookOpen className="w-5 h-5 text-teal-700" />
-                        <h3 className="font-black text-teal-900 text-base md:text-lg">評估規定</h3>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
+                        <BookOpen className="w-5 h-5 text-white" />
+                        <h3 className="font-black text-white text-base md:text-lg tracking-wider">評估規定</h3>
                       </div>
-                      <div className="p-6 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.assessment_rule}</div>
+                      <div className="p-6 text-gray-800 text-base md:text-lg whitespace-pre-line leading-relaxed">{selectedItem.assessment_rule}</div>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
-                        <Settings className="w-5 h-5 text-teal-700" />
-                        <h3 className="font-black text-teal-900 text-base md:text-lg">規格或功能規範</h3>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
+                        <Settings className="w-5 h-5 text-white" />
+                        <h3 className="font-black text-white text-base md:text-lg tracking-wider">規格或功能規範</h3>
                       </div>
-                      <div className="p-6 bg-slate-50/50 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.specs}</div>
+                      <div className="p-6 bg-slate-50/50 text-gray-800 text-base md:text-lg whitespace-pre-line leading-relaxed">{selectedItem.specs}</div>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
-                        <AlertTriangle className="w-5 h-5 text-teal-700" />
-                        <h3 className="font-black text-teal-900 text-base md:text-lg">其他規定</h3>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
+                        <AlertTriangle className="w-5 h-5 text-white" />
+                        <h3 className="font-black text-white text-base md:text-lg tracking-wider">其他規定</h3>
                       </div>
-                      <div className="p-6 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.other_rule}</div>
+                      <div className="p-6 text-gray-800 text-base md:text-lg whitespace-pre-line leading-relaxed">{selectedItem.other_rule}</div>
                     </div>
                   </div>
                 </div>
