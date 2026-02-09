@@ -126,23 +126,34 @@
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                 <input type="text" placeholder="搜尋名稱、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
-              {/* 大分類標籤：還原間距 (gap-2, px-3 py-1) */}
               <div className="flex flex-wrap gap-2 py-1">
-                <button onClick={() => setSelectedCategory("All")} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
+                <button onClick={() => setSelectedCategory("All")} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-600 hover:bg-gray-100"}`}>全部</button>
                 {categories.map(cat => (
                   <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
             </div>
 
-            {/* 小項目清單：改為緊湊排版 (py-1.5 px-3) */}
+            {/* 側邊欄清單：項次放大並與名稱並排 */}
             <nav className="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50 custom-scrollbar">
               {filteredData.map((item) => (
-                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left py-1.5 px-3 rounded-lg flex flex-col transition-all border-l-4 ${selectedItem?.id === item.id ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5' : 'hover:bg-white border-transparent text-gray-600'}`}>
-                  <div className="mb-0.5">
-                    <span className="font-bold bg-gray-200 text-gray-500 px-1.5 py-0.2 rounded text-[9px]">{item.item_no}</span>
+                <button 
+                  key={item.id} 
+                  onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} 
+                  className={`w-full text-left py-2 px-3 rounded-lg flex flex-row items-start gap-3 transition-all border-l-4 ${
+                    selectedItem?.id === item.id 
+                    ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5 z-10' 
+                    : 'hover:bg-white border-transparent text-gray-600'
+                  }`}
+                >
+                  {/* 項次數字區域：放大、並排、固定寬度 */}
+                  <div className="flex-shrink-0 mt-0.5">
+                    <span className="font-mono font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-sm min-w-[36px] text-center inline-block">
+                      {item.item_no}
+                    </span>
                   </div>
-                  <div className={`text-sm font-bold break-words leading-tight ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
+                  {/* 名稱區域：自動換行 */}
+                  <div className={`text-sm font-bold break-words leading-snug flex-1 ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
                     {item.name}
                   </div>
                 </button>
@@ -195,7 +206,6 @@
                     </div>
                   </div>
 
-                  {/* 右側內容主題標題：強化對比 (bg-teal-600, text-white, border-l-8) */}
                   <div className="space-y-6">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                       <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
