@@ -79,6 +79,10 @@
         });
       }, []);
 
+      const categories = useMemo(() => {
+        return [...new Set(dataList.map(item => item.category))];
+      }, [dataList]);
+
       const filteredData = useMemo(() => {
         return dataList.filter(item => {
           const matchesSearch = (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) || (item.item_no && item.item_no.includes(searchTerm));
@@ -111,7 +115,7 @@
               </div>
               <div className="flex flex-wrap gap-1.5">
                 <button onClick={() => setSelectedCategory("All")} className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
-                {[...new Set(dataList.map(i => i.category))].map(cat => (
+                {categories.map(cat => (
                   <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
                 ))}
               </div>
@@ -133,53 +137,49 @@
               <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600"><Menu className="w-6 h-6" /></button>
             </div>
 
-            <section className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+            <section className="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar">
               {selectedItem && (
                 <div className="max-w-6xl mx-auto space-y-4">
                   
-                  {/* 【優化 1】更緊湊的 Header：並排且字體適中 */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-5 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="relative z-10 flex-1">
-                      <span className="bg-teal-600 text-white text-[10px] lg:text-xs px-2 py-0.5 rounded font-bold inline-block mb-1 shadow-sm uppercase">{selectedItem.category}</span>
-                      <h2 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">
-                        {selectedItem.item_no}. {selectedItem.name}
-                      </h2>
+                  {/* 第一列：標題區 (電腦版更簡潔) */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8 relative overflow-hidden">
+                    <span className="bg-teal-600 text-white text-[10px] lg:text-sm px-3 py-1 rounded-lg font-bold inline-block mb-3 shadow-sm">{selectedItem.category}</span>
+                    <h2 className="text-2xl md:text-4xl font-black text-slate-800 leading-tight">
+                      {selectedItem.item_no}. {selectedItem.name}
+                    </h2>
+                  </div>
+
+                  {/* 第二列：全方位資訊列 (電腦版並排 5 欄) */}
+                  <div className="flex flex-col lg:flex-row gap-3">
+                    {/* 年限與評估 (原本的右上資訊，在電腦版併入此列) */}
+                    <div className="flex flex-row gap-3 flex-1">
+                      <div className="bg-indigo-50 px-4 py-3 lg:py-5 rounded-xl flex items-center gap-3 border border-indigo-100 shadow-sm flex-1">
+                        <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-indigo-500" />
+                        <div><span className="text-[10px] lg:text-xs font-bold text-indigo-400 block mb-0.5">年限</span><div className="text-sm lg:text-lg font-black text-indigo-900">{selectedItem.min_years} 年</div></div>
+                      </div>
+                      <div className="bg-rose-50 px-4 py-3 lg:py-5 rounded-xl flex items-center gap-3 border border-rose-100 shadow-sm flex-1">
+                        <UserCheck className="w-5 h-5 lg:w-6 lg:h-6 text-rose-500" />
+                        <div><span className="text-[10px] lg:text-xs font-bold text-rose-400 block mb-0.5">評估</span><div className="text-sm lg:text-lg font-black text-rose-900">{selectedItem.assessment_personnel}</div></div>
+                      </div>
                     </div>
 
-                    <div className="relative z-10 flex flex-row gap-2 lg:gap-3">
-                      <div className="bg-indigo-50 px-3 py-2 rounded-lg flex items-center gap-2 border border-indigo-100 shadow-sm flex-1 lg:flex-none lg:min-w-[120px]">
-                        <Clock className="w-4 h-4 text-indigo-500" />
-                        <div>
-                          <span className="text-[10px] font-bold text-indigo-400 block leading-none mb-0.5">年限</span>
-                          <div className="text-sm lg:text-base font-black text-indigo-900">{selectedItem.min_years} 年</div>
+                    {/* 補助金額 (電腦版併入此列，變為水平扁平排版) */}
+                    <div className="flex flex-col lg:flex-row gap-3 lg:flex-[2]">
+                      {[
+                        { label: "一般戶", val: selectedItem.subsidy.general, color: "emerald", bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-700", valColor: "text-emerald-500" },
+                        { label: "中低收", val: selectedItem.subsidy.mid, color: "blue", bg: "bg-blue-50", border: "border-blue-100", text: "text-blue-700", valColor: "text-blue-500" },
+                        { label: "低收入", val: selectedItem.subsidy.low, color: "amber", bg: "bg-amber-50", border: "border-amber-100", text: "text-amber-700", valColor: "text-amber-500" }
+                      ].map((s, idx) => (
+                        <div key={idx} className={`${s.bg} px-4 py-3 lg:py-5 rounded-xl border ${s.border} shadow-sm flex flex-row lg:flex-col items-center justify-between lg:justify-center flex-1`}>
+                          <div className={`text-sm lg:text-xs font-black ${s.text} uppercase tracking-tighter lg:mb-1`}>{s.label}</div>
+                          <div className={`text-lg lg:text-xl font-black ${s.valColor} tracking-tight`}>{s.val}</div>
                         </div>
-                      </div>
-                      <div className="bg-rose-50 px-3 py-2 rounded-lg flex items-center gap-2 border border-rose-100 shadow-sm flex-1 lg:flex-none lg:min-w-[120px]">
-                        <UserCheck className="w-4 h-4 text-rose-500" />
-                        <div>
-                          <span className="text-[10px] font-bold text-rose-400 block leading-none mb-0.5">評估</span>
-                          <div className="text-sm lg:text-base font-black text-rose-900">{selectedItem.assessment_personnel}</div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* 【優化 2】扁平化金額區：縮減高度與字體 */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                    {[
-                      { label: "一般戶 (50%)", val: selectedItem.subsidy.general, color: "emerald" },
-                      { label: "中低收 (75%)", val: selectedItem.subsidy.mid, color: "blue" },
-                      { label: "低收入 (全額)", val: selectedItem.subsidy.low, color: "amber" }
-                    ].map((s, idx) => (
-                      <div key={idx} className={`bg-white px-4 py-3 lg:py-4 rounded-xl border border-${s.color}-100 shadow-sm flex lg:flex-row items-center justify-between lg:px-5`}>
-                        <div className={`text-sm lg:text-base font-black text-${s.color}-700 uppercase tracking-tighter`}>{s.label}</div>
-                        <div className={`text-lg lg:text-2xl font-black text-${s.color}-500 tracking-tight`}>{s.val}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 【優化 3】內容區：文字大小調回最適閱讀大小 (text-base) */}
-                  <div className="flex flex-col gap-4">
+                  {/* 第三列之後：詳細內容區 (一欄到底) */}
+                  <div className="flex flex-col gap-5 pt-2">
                     {[
                       { title: "補助對象", icon: CheckSquare, content: selectedItem.target, bg: "bg-blue-50/20" },
                       { title: "評估規定", icon: BookOpen, content: selectedItem.assessment_rule, bg: "bg-white" },
@@ -187,11 +187,11 @@
                       { title: "其他規定", icon: AlertTriangle, content: selectedItem.other_rule, bg: "bg-white" }
                     ].map((box, idx) => (
                       <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="bg-teal-600 px-4 py-2 flex items-center gap-3 border-l-8 border-teal-800">
+                        <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
                           <box.icon className="w-5 h-5 text-white" />
                           <h3 className="font-black text-white text-sm md:text-base tracking-wider">{box.title}</h3>
                         </div>
-                        <div className={`p-5 lg:p-6 ${box.bg} text-gray-700 text-sm lg:text-base whitespace-pre-line leading-relaxed`}>
+                        <div className={`p-5 lg:p-7 ${box.bg} text-gray-700 text-sm lg:text-base whitespace-pre-line leading-relaxed`}>
                           {box.content}
                         </div>
                       </div>
