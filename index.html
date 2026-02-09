@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>身障輔具補助查詢系統</title>
+  <title>身障輔具&無障礙補助查詢系統</title>
   
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0f766e">
@@ -70,14 +70,21 @@
               const name = row["補助項目"] || "";
               let rawCat = row["輔具分類"] || "其他";
               let displayCat = rawCat;
-              if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視") || rawCat.includes("聽") || rawCat.includes("電子耳") || rawCat.includes("助聽")) {
+              if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視") || rawCat.includes("聽")) {
                 displayCat = "溝通及資訊輔具";
               }
               return {
-                id: index, item_no: row["項次"], category: displayCat, name: name,
-                subsidy: { general: row["一般戶"], mid: row["中低收"], low: row["低收"] },
-                min_years: row["年限"], assessment_personnel: row["評估人員"],
-                target: row["補助對象"], assessment_rule: row["評估規定"], specs: row["規格或功能規範"], other_rule: row["其他規定"]
+                id: index,
+                item_no: row["項次"],
+                category: displayCat,
+                name: name,
+                subsidy: { general: row["一般戶"] || "0", mid: row["中低收"] || "0", low: row["低收"] || "0" },
+                min_years: row["年限"] || "-",
+                assessment_personnel: row["評估人員"] || "-",
+                target: row["補助對象"] || "無詳細資料",
+                assessment_rule: row["評估規定"] || "無詳細資料",
+                specs: row["規格或功能規範"] || "無詳細資料",
+                other_rule: row["其他規定"] || row["其他"] || Object.values(row)[11] || "無特別規定"
               };
             });
             setDataList(processed);
@@ -93,7 +100,7 @@
 
       const filteredData = useMemo(() => {
         return dataList.filter(item => {
-          const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || (item.item_no && item.item_no.includes(searchTerm));
+          const matchesSearch = (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) || (item.item_no && item.item_no.includes(searchTerm));
           const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
           return matchesSearch && matchesCategory;
         });
@@ -105,37 +112,38 @@
         <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
           {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
+          {/* 修正 1：側邊欄標題與緊湊佈局 */}
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-            <div className="p-5 border-b bg-teal-700 text-white">
-              <h1 className="text-xl font-bold flex items-center gap-2"><FileText className="w-6 h-6" /> 身障輔具查詢</h1>
+            <div className="p-4 border-b bg-teal-700 text-white">
+              <h1 className="text-lg font-bold flex items-center gap-2 leading-tight tracking-tight">
+                <FileText className="w-5 h-5 flex-shrink-0" /> 
+                身障輔具&無障礙補助查詢
+              </h1>
               <div className="flex justify-between items-center mt-1 text-[10px] opacity-70"><span>112年最新基準表</span><button onClick={() => setIsSidebarOpen(false)} className="lg:hidden"><X className="w-4 h-4" /></button></div>
             </div>
 
-            <div className="p-3 border-b space-y-2 bg-gray-50">
+            <div className="p-3 border-b space-y-2 bg-gray-50 text-xs">
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                <input type="text" placeholder="搜尋項目、項次..." className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400" />
+                <input type="text" placeholder="搜尋項目、項次..." className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
-              <div className="flex flex-wrap gap-1.5 py-1">
-                <button onClick={() => setSelectedCategory("All")} className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
+              <div className="flex flex-wrap gap-1">
+                <button onClick={() => setSelectedCategory("All")} className={`px-2 py-0.5 rounded-full font-bold transition-all ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500"}`}>全部</button>
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2 py-0.5 rounded-full font-bold transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500"}`}>{cat}</button>
                 ))}
               </div>
             </div>
 
+            {/* 修正 2：更緊湊的側邊欄清單 (p-2.5) */}
             <nav className="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50 custom-scrollbar">
               {filteredData.map((item) => (
-                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left p-4 rounded-xl flex items-center transition-all border-l-4 ${selectedItem?.id === item.id ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5' : 'hover:bg-white border-transparent text-gray-600'}`}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 text-[10px]">
-                      {/* 紅圈修正：移除子分類標籤，僅保留項次數字 */}
-                      <span className="font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded text-xs">{item.item_no}</span>
-                    </div>
-                    {/* 藍圈修正：移除 truncate，改為換行顯示長文字，並優化行距 */}
-                    <div className={`text-sm font-bold break-words leading-snug ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
-                      {item.name}
-                    </div>
+                <button key={item.id} onClick={() => { setSelectedItem(item); setIsSidebarOpen(false); }} className={`w-full text-left p-2.5 rounded-lg flex flex-col transition-all border-l-4 ${selectedItem?.id === item.id ? 'bg-white border-teal-600 shadow-md ring-1 ring-black/5' : 'hover:bg-white border-transparent text-gray-600'}`}>
+                  <div className="mb-1">
+                    <span className="font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded text-[10px]">{item.item_no}</span>
+                  </div>
+                  <div className={`text-sm font-bold break-words leading-tight ${selectedItem?.id === item.id ? 'text-teal-900' : ''}`}>
+                    {item.name}
                   </div>
                 </button>
               ))}
@@ -163,15 +171,15 @@
 
                   <div className="grid grid-cols-3 gap-2 md:gap-4">
                     <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-emerald-600 mb-1">一般戶</div>
+                      <div className="text-[10px] font-bold text-emerald-600 mb-1 tracking-widest">一般戶</div>
                       <div className="text-lg md:text-2xl font-black text-emerald-500">{selectedItem.subsidy.general}</div>
                     </div>
                     <div className="bg-white p-3 rounded-2xl border border-blue-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-blue-600 mb-1">中低收</div>
+                      <div className="text-[10px] font-bold text-blue-600 mb-1 tracking-widest">中低收</div>
                       <div className="text-lg md:text-2xl font-black text-blue-500">{selectedItem.subsidy.mid}</div>
                     </div>
                     <div className="bg-white p-3 rounded-2xl border border-amber-100 shadow-sm text-center">
-                      <div className="text-[10px] font-bold text-amber-600 mb-1">低收入</div>
+                      <div className="text-[10px] font-bold text-amber-600 mb-1 tracking-widest">低收入</div>
                       <div className="text-lg md:text-2xl font-black text-amber-500">{selectedItem.subsidy.low}</div>
                     </div>
                   </div>
@@ -179,26 +187,43 @@
                   <div className="grid grid-cols-2 gap-2 md:gap-4">
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-indigo-50 rounded-xl text-indigo-500"><Clock className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block">使用年限</span><div className="text-sm font-black text-gray-700">{selectedItem.min_years} 年</div></div>
+                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase tracking-tighter">使用年限</span><div className="text-sm font-black text-gray-700">{selectedItem.min_years} 年</div></div>
                     </div>
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
                       <div className="p-2 bg-rose-50 rounded-xl text-rose-500"><UserCheck className="w-5 h-5" /></div>
-                      <div><span className="text-[10px] font-bold text-gray-400 block">評估人員</span><div className="text-sm font-black text-gray-700">{selectedItem.assessment_personnel}</div></div>
+                      <div><span className="text-[10px] font-bold text-gray-400 block uppercase tracking-tighter">評估人員</span><div className="text-sm font-black text-gray-700">{selectedItem.assessment_personnel}</div></div>
                     </div>
                   </div>
 
+                  {/* 修正 3：更顯眼的欄位主題標題 (Title) */}
                   <div className="space-y-4">
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex items-center gap-2"><CheckSquare className="w-4 h-4 text-teal-600" /><h3 className="font-bold text-gray-700 text-sm">補助對象資格</h3></div>
-                      <div className="p-5 bg-blue-50/50 text-blue-900 text-sm whitespace-pre-line leading-relaxed">{selectedItem.target}</div>
+                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
+                        <CheckSquare className="w-5 h-5 text-teal-700" />
+                        <h3 className="font-black text-teal-900 text-base md:text-lg">補助對象</h3>
+                      </div>
+                      <div className="p-6 bg-blue-50/30 text-blue-900 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.target}</div>
                     </div>
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex items-center gap-2"><BookOpen className="w-4 h-4 text-teal-600" /><h3 className="font-bold text-gray-700 text-sm">評估詳細規定</h3></div>
-                      <div className="p-5 text-gray-600 text-sm whitespace-pre-line leading-relaxed">{selectedItem.assessment_rule}</div>
+                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
+                        <BookOpen className="w-5 h-5 text-teal-700" />
+                        <h3 className="font-black text-teal-900 text-base md:text-lg">評估規定</h3>
+                      </div>
+                      <div className="p-6 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.assessment_rule}</div>
                     </div>
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex items-center gap-2"><Settings className="w-4 h-4 text-teal-600" /><h3 className="font-bold text-gray-700 text-sm">規格功能規範</h3></div>
-                      <div className="p-5 bg-slate-50 text-gray-600 text-sm whitespace-pre-line leading-relaxed">{selectedItem.specs}</div>
+                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
+                        <Settings className="w-5 h-5 text-teal-700" />
+                        <h3 className="font-black text-teal-900 text-base md:text-lg">規格或功能規範</h3>
+                      </div>
+                      <div className="p-6 bg-slate-50/50 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.specs}</div>
+                    </div>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-teal-50 px-5 py-3.5 border-b border-teal-100 flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-teal-700" />
+                        <h3 className="font-black text-teal-900 text-base md:text-lg">其他規定</h3>
+                      </div>
+                      <div className="p-6 text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{selectedItem.other_rule}</div>
                     </div>
                   </div>
                 </div>
