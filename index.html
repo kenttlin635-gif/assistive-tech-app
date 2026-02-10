@@ -26,6 +26,7 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     
+    /* 浮水印：垂直置中優化 */
     .bg-number-watermark {
       position: absolute; top: 50%; right: 1rem; 
       transform: translateY(-50%);
@@ -52,7 +53,7 @@
     const Menu = ({ className }) => <IconWrapper className={className}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
     const X = ({ className }) => <IconWrapper className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
     const Clock = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconWrapper>;
-    const UserCheck = ({ className }) => <IconWrapper className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></IconWrapper>;
+    const UserCheck = ({ className }) => <IconWrapper className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></IconWrapper>;
     const CheckSquare = ({ className }) => <IconWrapper className={className}><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
     const BookOpen = ({ className }) => <IconWrapper className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconWrapper>;
     const Settings = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></IconWrapper>;
@@ -75,11 +76,10 @@
             try {
               if (results.data.length === 0) throw new Error("CSV 無資料");
               const processed = results.data.map((row, index) => {
-                let rawCat = row["輔具分類"] || "其他";
+                let rawCat = (row["輔具分類"] || "其他").trim();
                 let displayCat = rawCat;
-                if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視覺") || rawCat.includes("聽覺") || rawCat.includes("聽") || rawCat.includes("視")) { 
-                  displayCat = "溝通及資訊輔具"; 
-                }
+                const keywords = ["溝通", "資訊", "視覺", "聽覺", "視", "聽"];
+                if (keywords.some(kw => rawCat.includes(kw))) { displayCat = "溝通及資訊輔具"; }
                 return {
                   id: index, item_no: row["項次"], category: displayCat, name: row["補助項目"] || "未命名",
                   subsidy: { general: row["一般戶"] || "0", mid: row["中低收"] || "0", low: row["低收"] || "0" },
@@ -150,7 +150,6 @@
           </aside>
 
           <main className="flex-1 flex flex-col h-full overflow-hidden w-full bg-gray-100">
-            {/* 手機版 Header：方案 B 合併單行並放大字體 */}
             <div className="lg:hidden bg-teal-700 border-b p-4 flex items-center justify-between shadow-md z-10 text-white">
               <h1 className="text-base font-bold tracking-tight truncate mr-2">身障輔具&無障礙補助查詢(112年)</h1>
               <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-white flex-shrink-0">
@@ -161,7 +160,6 @@
             <section className="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar text-left">
               {selectedItem && (
                 <div className="max-w-7xl mx-auto space-y-4">
-                  
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:p-8 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="bg-number-watermark">{selectedItem.item_no}</div>
                     <div className="relative z-10 flex-1">
@@ -174,18 +172,16 @@
 
                   <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch">
                     <div className="flex flex-row gap-2 lg:gap-3 w-full lg:w-auto flex-none">
-                      <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-indigo-100 shadow-sm flex-1 lg:min-w-[140px]">
+                      <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-indigo-100 shadow-sm flex-1 lg:min-w-[160px]">
                         <span className="text-[10px] lg:text-sm font-bold text-indigo-400 uppercase mb-1">年限</span>
                         <div className="text-base lg:text-2xl font-black text-indigo-900">{selectedItem.min_years} 年</div>
                       </div>
-                      <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-rose-100 shadow-sm flex-1 lg:min-w-[140px]">
+                      <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-rose-100 shadow-sm flex-1 lg:min-w-[160px]">
                         <span className="text-[10px] lg:text-sm font-bold text-rose-400 uppercase mb-1">評估人員</span>
                         <div className="text-base lg:text-2xl font-black text-rose-900">{selectedItem.assessment_personnel}</div>
                       </div>
                     </div>
-
                     <div className="hidden lg:block w-px bg-slate-300 mx-1 my-2"></div>
-
                     <div className="grid grid-cols-3 gap-2 lg:gap-3 flex-1">
                       {[
                         { label: "一般戶", val: selectedItem.subsidy.general, border: "border-emerald-200", text: "text-emerald-700", valColor: "text-emerald-500" },
@@ -202,7 +198,7 @@
 
                   <div className="flex flex-col gap-5 pt-2">
                     {[
-                      { title: "補助對象", icon: CheckSquare, content: selectedItem.target, bg: "bg-blue-50/10" },
+                      { title: "補助對象", icon: CheckSquare, content: selectedItem.target, bg: "bg-blue-50/20" },
                       { title: "評估規定", icon: BookOpen, content: selectedItem.assessment_rule, bg: "bg-white" },
                       { title: "規格或功能規範", icon: Settings, content: selectedItem.specs, bg: "bg-slate-50/50" },
                       { title: "其他規定", icon: AlertTriangle, content: selectedItem.other_rule, bg: "bg-white" }
