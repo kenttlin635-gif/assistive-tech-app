@@ -26,7 +26,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     
-    /* 修正：浮水印垂直置中 */
     .bg-number-watermark {
       position: absolute; top: 50%; right: 1rem; 
       transform: translateY(-50%);
@@ -118,7 +117,6 @@
           {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-            {/* 電腦版側邊欄維持標題，手機版側邊欄將標題空間釋放給搜尋 */}
             <div className="hidden lg:block p-5 border-b bg-teal-700 text-white shadow-sm">
               <h1 className="text-lg font-bold">身障輔具&無障礙補助查詢</h1>
               <div className="text-[10px] opacity-70 mt-1">112年最新基準表</div>
@@ -152,13 +150,10 @@
           </aside>
 
           <main className="flex-1 flex flex-col h-full overflow-hidden w-full bg-gray-100">
-            {/* 修正 2：手機版 Header 顯示系統名稱，節省空間並強化品牌 */}
-            <div className="lg:hidden bg-teal-700 border-b p-3 flex items-center justify-between shadow-md z-10 text-white">
-              <div className="flex flex-col text-left">
-                <h1 className="text-sm font-bold tracking-tight">身障輔具&無障礙補助查詢</h1>
-                <span className="text-[9px] opacity-80">112年最新基準表</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-white">
+            {/* 手機版 Header：方案 B 合併單行並放大字體 */}
+            <div className="lg:hidden bg-teal-700 border-b p-4 flex items-center justify-between shadow-md z-10 text-white">
+              <h1 className="text-base font-bold tracking-tight truncate mr-2">身障輔具&無障礙補助查詢(112年)</h1>
+              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-white flex-shrink-0">
                 <Menu className="w-6 h-6" />
               </button>
             </div>
@@ -167,7 +162,6 @@
               {selectedItem && (
                 <div className="max-w-7xl mx-auto space-y-4">
                   
-                  {/* Header：修正 1 & 4：整合項次並垂直置中浮水印 */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:p-8 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="bg-number-watermark">{selectedItem.item_no}</div>
                     <div className="relative z-10 flex-1">
@@ -178,9 +172,7 @@
                     </div>
                   </div>
 
-                  {/* 核心資訊與金額列 */}
                   <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch">
-                    {/* 左：年限與評估人員 (手機佔滿寬度) */}
                     <div className="flex flex-row gap-2 lg:gap-3 w-full lg:w-auto flex-none">
                       <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-indigo-100 shadow-sm flex-1 lg:min-w-[140px]">
                         <span className="text-[10px] lg:text-sm font-bold text-indigo-400 uppercase mb-1">年限</span>
@@ -194,7 +186,6 @@
 
                     <div className="hidden lg:block w-px bg-slate-300 mx-1 my-2"></div>
 
-                    {/* 右：補助金額 (手機並排、標籤大字、白底) */}
                     <div className="grid grid-cols-3 gap-2 lg:gap-3 flex-1">
                       {[
                         { label: "一般戶", val: selectedItem.subsidy.general, border: "border-emerald-200", text: "text-emerald-700", valColor: "text-emerald-500" },
