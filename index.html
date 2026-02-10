@@ -26,20 +26,17 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     
+    /* 修正：浮水印垂直置中 */
     .bg-number-watermark {
-      position: absolute; top: -1rem; right: 1rem; 
+      position: absolute; top: 50%; right: 1rem; 
+      transform: translateY(-50%);
       font-size: 7rem; font-weight: 900; font-style: italic;
       color: rgba(16, 185, 129, 0.08); 
       line-height: 1; z-index: 0;
       pointer-events: none;
     }
     @media (min-width: 1024px) { 
-      .bg-number-watermark { 
-        font-size: 10rem; 
-        top: 50%; 
-        right: 2rem;
-        transform: translateY(-50%);
-      } 
+      .bg-number-watermark { font-size: 10rem; right: 2rem; } 
     }
   </style>
 </head>
@@ -59,7 +56,7 @@
     const UserCheck = ({ className }) => <IconWrapper className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></IconWrapper>;
     const CheckSquare = ({ className }) => <IconWrapper className={className}><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
     const BookOpen = ({ className }) => <IconWrapper className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconWrapper>;
-    const Settings = ({ className }) => <IconWrapper className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconWrapper>;
+    const Settings = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></IconWrapper>;
     const AlertTriangle = ({ className }) => <IconWrapper className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconWrapper>;
 
     const AssistiveDeviceSubsidy = () => {
@@ -72,31 +69,24 @@
       const [selectedCategory, setSelectedCategory] = useState("All");
 
       useEffect(() => {
-        Papa.parse("data.csv", {
+        const csvUrl = "data.csv?v=" + new Date().getTime();
+        Papa.parse(csvUrl, {
           download: true, header: true, skipEmptyLines: true,
           complete: (results) => {
             try {
               if (results.data.length === 0) throw new Error("CSV 無資料");
               const processed = results.data.map((row, index) => {
-                const name = row["補助項目"] || "未命名";
                 let rawCat = row["輔具分類"] || "其他";
                 let displayCat = rawCat;
-                // 統整判斷：包含溝通、資訊、視覺、聽覺的項目全部歸類
-                if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視覺") || rawCat.includes("聽覺")) { 
+                if (rawCat.includes("溝通") || rawCat.includes("資訊") || rawCat.includes("視覺") || rawCat.includes("聽覺") || rawCat.includes("聽") || rawCat.includes("視")) { 
                   displayCat = "溝通及資訊輔具"; 
                 }
                 return {
-                  id: index,
-                  item_no: row["項次"],
-                  category: displayCat,
-                  name: name,
+                  id: index, item_no: row["項次"], category: displayCat, name: row["補助項目"] || "未命名",
                   subsidy: { general: row["一般戶"] || "0", mid: row["中低收"] || "0", low: row["低收"] || "0" },
-                  min_years: row["年限"] || "-",
-                  assessment_personnel: row["評估人員"] || "-",
-                  target: row["補助對象"] || "無詳細資料",
-                  assessment_rule: row["評估規定"] || "無詳細資料",
-                  specs: row["規格或功能規範"] || "無詳細資料",
-                  other_rule: row["其他規定"] || row["其他"] || "無特別規定"
+                  min_years: row["年限"] || "-", assessment_personnel: row["評估人員"] || "-",
+                  target: row["補助對象"] || "無詳細資料", assessment_rule: row["評估規定"] || "無詳細資料",
+                  specs: row["規格或功能規範"] || "無詳細資料", other_rule: row["其他規定"] || row["其他"] || "無特別規定"
                 };
               });
               setDataList(processed);
@@ -109,7 +99,7 @@
       }, []);
 
       const categories = useMemo(() => {
-        return [...new Set(dataList.map(item => item.category))];
+        return ["All", ...new Set(dataList.map(item => item.category))];
       }, [dataList]);
 
       const filteredData = useMemo(() => {
@@ -128,12 +118,13 @@
           {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-            <div className="p-5 border-b bg-teal-700 text-white shadow-sm">
+            {/* 電腦版側邊欄維持標題，手機版側邊欄將標題空間釋放給搜尋 */}
+            <div className="hidden lg:block p-5 border-b bg-teal-700 text-white shadow-sm">
               <h1 className="text-lg font-bold">身障輔具&無障礙補助查詢</h1>
               <div className="text-[10px] opacity-70 mt-1">112年最新基準表</div>
             </div>
             
-            <div className="p-3 border-b space-y-3 bg-gray-50 text-left">
+            <div className="p-3 border-b space-y-3 bg-gray-50">
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                 <input type="text" placeholder="搜尋項目名稱..." className="w-full pl-9 pr-10 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -141,10 +132,11 @@
                   <button onClick={() => setSearchTerm("")} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                <button onClick={() => setSelectedCategory("All")} className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${selectedCategory === "All" ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>全部</button>
+              <div className="flex flex-wrap gap-1.5 no-scrollbar overflow-x-auto">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${selectedCategory === cat ? "bg-teal-600 text-white shadow-sm" : "bg-white border text-gray-500 hover:bg-gray-100"}`}>
+                    {cat === "All" ? "全部" : cat}
+                  </button>
                 ))}
               </div>
             </div>
@@ -160,28 +152,35 @@
           </aside>
 
           <main className="flex-1 flex flex-col h-full overflow-hidden w-full bg-gray-100">
-            <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between shadow-sm z-10 text-left">
-              <h2 className="font-bold text-gray-800 text-sm truncate">{selectedItem?.name}</h2>
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600"><Menu className="w-6 h-6" /></button>
+            {/* 修正 2：手機版 Header 顯示系統名稱，節省空間並強化品牌 */}
+            <div className="lg:hidden bg-teal-700 border-b p-3 flex items-center justify-between shadow-md z-10 text-white">
+              <div className="flex flex-col text-left">
+                <h1 className="text-sm font-bold tracking-tight">身障輔具&無障礙補助查詢</h1>
+                <span className="text-[9px] opacity-80">112年最新基準表</span>
+              </div>
+              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-white">
+                <Menu className="w-6 h-6" />
+              </button>
             </div>
 
             <section className="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar text-left">
               {selectedItem && (
                 <div className="max-w-7xl mx-auto space-y-4">
                   
-                  {/* Header：浮水印置中修復 */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:p-6 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  {/* Header：修正 1 & 4：整合項次並垂直置中浮水印 */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:p-8 relative overflow-hidden flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="bg-number-watermark">{selectedItem.item_no}</div>
                     <div className="relative z-10 flex-1">
                       <span className="bg-teal-600 text-white text-[10px] lg:text-xs px-2 py-0.5 rounded font-bold inline-block mb-1 shadow-sm uppercase">{selectedItem.category}</span>
-                      <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-slate-800 leading-tight">{selectedItem.name}</h2>
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-slate-800 leading-tight">
+                        {selectedItem.item_no}. {selectedItem.name}
+                      </h2>
                     </div>
                   </div>
 
-                  {/* 核心資訊與金額列：電腦版並排、文字平衡 */}
+                  {/* 核心資訊與金額列 */}
                   <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch">
-                    
-                    {/* 左：年限與評估人員 (手機 w-full) */}
+                    {/* 左：年限與評估人員 (手機佔滿寬度) */}
                     <div className="flex flex-row gap-2 lg:gap-3 w-full lg:w-auto flex-none">
                       <div className="bg-white px-3 py-4 rounded-xl flex flex-col items-center justify-center border border-indigo-100 shadow-sm flex-1 lg:min-w-[140px]">
                         <span className="text-[10px] lg:text-sm font-bold text-indigo-400 uppercase mb-1">年限</span>
@@ -193,10 +192,9 @@
                       </div>
                     </div>
 
-                    {/* 中間垂直線 (僅電腦版) */}
                     <div className="hidden lg:block w-px bg-slate-300 mx-1 my-2"></div>
 
-                    {/* 右：補助金額 (手機並排、白底、大文字) */}
+                    {/* 右：補助金額 (手機並排、標籤大字、白底) */}
                     <div className="grid grid-cols-3 gap-2 lg:gap-3 flex-1">
                       {[
                         { label: "一般戶", val: selectedItem.subsidy.general, border: "border-emerald-200", text: "text-emerald-700", valColor: "text-emerald-500" },
@@ -218,7 +216,7 @@
                       { title: "規格或功能規範", icon: Settings, content: selectedItem.specs, bg: "bg-slate-50/50" },
                       { title: "其他規定", icon: AlertTriangle, content: selectedItem.other_rule, bg: "bg-white" }
                     ].map((box, idx) => (
-                      <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-left">
                         <div className="bg-teal-600 px-5 py-2.5 flex items-center gap-3 border-l-8 border-teal-800">
                           <box.icon className="w-5 h-5 text-white" />
                           <h3 className="font-black text-white text-base md:text-lg tracking-wider">{box.title}</h3>
