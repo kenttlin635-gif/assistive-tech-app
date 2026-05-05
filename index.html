@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <!-- 這些外部套件已在 sw.js 中設定快取，離線時可正常執行 -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -39,6 +40,17 @@
       .bg-number-watermark { font-size: 10rem; right: 2rem; } 
     }
   </style>
+
+  <script>
+    // 註冊 Service Worker (離線引擎)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('離線引擎已啟動', reg))
+          .catch(err => console.log('離線引擎啟動失敗', err));
+      });
+    }
+  </script>
 </head>
 <body class="bg-gray-50 text-left text-slate-800">
   <div id="root"></div>
@@ -70,30 +82,52 @@
 
       useEffect(() => {
         const csvUrl = "data.csv?v=" + new Date().getTime();
+
+        const processRawData = (rawData) => {
+          const processed = rawData.map((row, index) => {
+            let rawCat = (row["輔具分類"] || "其他").trim();
+            let displayCat = rawCat;
+            const keywords = ["溝通", "資訊", "視覺", "聽覺", "視", "聽"];
+            if (keywords.some(kw => rawCat.includes(kw))) { displayCat = "溝通及資訊輔具"; }
+            return {
+              id: index, item_no: row["項次"], category: displayCat, name: row["補助項目"] || "未命名",
+              subsidy: { general: row["一般戶"] || "0", mid: row["中低收"] || "0", low: row["低收"] || "0" },
+              min_years: row["年限"] || "-", assessment_personnel: row["評估人員"] || "-",
+              target: row["補助對象"] || "無詳細資料", assessment_rule: row["評估規定"] || "無詳細資料",
+              specs: row["規格或功能規範"] || "無詳細資料", other_rule: row["其他規定"] || row["其他"] || "無特別規定"
+            };
+          });
+          // 儲存至本地備份
+          localStorage.setItem('assistive_data_backup', JSON.stringify(processed));
+          return processed;
+        };
+
+        const loadFromBackup = () => {
+          const backup = localStorage.getItem('assistive_data_backup');
+          if (backup) {
+            console.log("正在使用離線備份資料");
+            const offlineData = JSON.parse(backup);
+            setDataList(offlineData);
+            setSelectedItem(offlineData[0]);
+            setLoading(false);
+          } else {
+            setError("讀取失敗且無本地備份。");
+            setLoading(false);
+          }
+        };
+
         Papa.parse(csvUrl, {
           download: true, header: true, skipEmptyLines: true,
           complete: (results) => {
             try {
               if (results.data.length === 0) throw new Error("CSV 無資料");
-              const processed = results.data.map((row, index) => {
-                let rawCat = (row["輔具分類"] || "其他").trim();
-                let displayCat = rawCat;
-                const keywords = ["溝通", "資訊", "視覺", "聽覺", "視", "聽"];
-                if (keywords.some(kw => rawCat.includes(kw))) { displayCat = "溝通及資訊輔具"; }
-                return {
-                  id: index, item_no: row["項次"], category: displayCat, name: row["補助項目"] || "未命名",
-                  subsidy: { general: row["一般戶"] || "0", mid: row["中低收"] || "0", low: row["低收"] || "0" },
-                  min_years: row["年限"] || "-", assessment_personnel: row["評估人員"] || "-",
-                  target: row["補助對象"] || "無詳細資料", assessment_rule: row["評估規定"] || "無詳細資料",
-                  specs: row["規格或功能規範"] || "無詳細資料", other_rule: row["其他規定"] || row["其他"] || "無特別規定"
-                };
-              });
+              const processed = processRawData(results.data);
               setDataList(processed);
               setSelectedItem(processed[0]);
               setLoading(false);
-            } catch (err) { setError(err.message); setLoading(false); }
+            } catch (err) { loadFromBackup(); }
           },
-          error: () => { setError("讀取 CSV 失敗"); setLoading(false); }
+          error: () => { loadFromBackup(); }
         });
       }, []);
 
