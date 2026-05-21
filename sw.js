@@ -1,5 +1,6 @@
-// sw.js - 離線引擎加強版
-const CACHE_NAME = 'assistive-tech-v2';
+// sw.js - 離線引擎加強版 (手動同步更新優化版)
+// 【關鍵更新】變更 CACHE_NAME 版本號，強制手機重置快取並下載最新 index.html
+const CACHE_NAME = 'assistive-tech-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,14 +19,14 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('正在預載入離線資源...');
+      console.log('正在預載入最新離線資源...');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
   self.skipWaiting();
 });
 
-// 2. 激活階段：清理舊快取
+// 2. 激活階段：清理舊快取 (把舊的 v2 刪除，釋放空間)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -34,6 +35,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  self.clients.claim(); // 讓新版 Service Worker 立即接管網頁
 });
 
 // 3. 抓取階段：採「快取優先」策略
