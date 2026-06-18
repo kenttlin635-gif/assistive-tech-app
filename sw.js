@@ -1,13 +1,11 @@
-// sw.js - 離線引擎加強版 (手動同步更新優化版)
-// 【關鍵更新】變更 CACHE_NAME 版本號，強制手機重置快取並下載最新 index.html
-const CACHE_NAME = 'assistive-tech-v3';
+// sw.js - 離線引擎防彈版 (v4)
+const CACHE_NAME = 'assistive-tech-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './data.csv',
   './manifest.json',
   './icon.png',
-  // 核心套件 CDN：沒網路時就靠這些快取運作
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
@@ -15,18 +13,15 @@ const ASSETS_TO_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js'
 ];
 
-// 1. 安裝階段：強制下載所有必要資源
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('正在預載入最新離線資源...');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
   self.skipWaiting();
 });
 
-// 2. 激活階段：清理舊快取 (把舊的 v2 刪除，釋放空間)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -35,14 +30,13 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim(); // 讓新版 Service Worker 立即接管網頁
+  self.clients.claim();
 });
 
-// 3. 抓取階段：採「快取優先」策略
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // 如果快取有，直接給；沒有的話才去網路抓
+    // ignoreSearch: true 讓系統在離線時能忽略網址後面的隨機亂碼，精準拿出快取檔案
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       return cachedResponse || fetch(event.request);
     })
   );
