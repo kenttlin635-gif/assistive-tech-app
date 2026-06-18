@@ -1,5 +1,5 @@
-// sw.js - 離線引擎防彈版 (v4)
-const CACHE_NAME = 'assistive-tech-v4';
+// sw.js - 離線引擎極致穩定版 (v5)
+const CACHE_NAME = 'assistive-tech-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -16,7 +16,12 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // 【關鍵修正】個別快取檔案，就算某個圖示或檔案找不到，也不會導致整個離線系統崩潰罷工！
+      return Promise.all(
+        ASSETS_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => console.log('部分快取略過 (不影響主系統):', url));
+        })
+      );
     })
   );
   self.skipWaiting();
@@ -35,7 +40,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    // ignoreSearch: true 讓系統在離線時能忽略網址後面的隨機亂碼，精準拿出快取檔案
+    // ignoreSearch 確保在離線時能精準抓到檔案
     caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       return cachedResponse || fetch(event.request);
     })
