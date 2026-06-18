@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>身障輔具&無障礙補助查詢系統</title>
   
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      document.body.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc2626; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; justify-content: center;">' +
+        '<h2 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">⚠️ 系統載入發生衝突</h2>' +
+        '<p style="font-size: 14px; margin-bottom: 20px; color: #4b5563;">這通常是因為手機暫存卡住了，請點擊下方按鈕強制修復。</p>' +
+        '<button onclick="localStorage.clear(); if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>{for(let reg of regs)reg.unregister();});} window.location.reload(true);" style="padding: 12px 24px; background-color: #0f766e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔄 一鍵清除快取並修復系統</button>' +
+        '<p style="font-size: 10px; color: #9ca3af; margin-top: 30px; word-break: break-all;">錯誤代碼：' + message + '</p>' +
+        '</div>';
+      return true;
+    };
+  </script>
+
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0f766e">
   <link rel="apple-touch-icon" href="./icon.png">
@@ -26,7 +38,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     
-    /* 浮水印：垂直置中優化 */
     .bg-number-watermark {
       position: absolute; top: 50%; right: 1rem; 
       transform: translateY(-50%);
@@ -41,7 +52,6 @@
   </style>
 
   <script>
-    // 註冊 Service Worker (離線引擎)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -79,11 +89,14 @@
       const [isSidebarOpen, setIsSidebarOpen] = useState(false);
       const [selectedCategory, setSelectedCategory] = useState("All");
 
-      // 【新增狀態】紀錄最後同步時間與按鈕載入狀態
-      const [lastSyncTime, setLastSyncTime] = useState(localStorage.getItem('assistive_sync_time') || "未同步");
+      const getInitialSyncTime = () => {
+        try { return localStorage.getItem('assistive_sync_time') || "未同步"; }
+        catch(e) { return "未同步"; }
+      };
+
+      const [lastSyncTime, setLastSyncTime] = useState(getInitialSyncTime());
       const [isSyncing, setIsSyncing] = useState(false);
 
-      // 封裝一包核心的資料清洗映射函式
       const processRawData = (rawData) => {
         const processed = rawData.map((row, index) => {
           let rawCat = (row["輔具分類"] || "其他").trim();
@@ -98,16 +111,19 @@
             specs: row["規格或功能規範"] || "無詳細資料", other_rule: row["其他規定"] || row["其他"] || "無特別規定"
           };
         });
-        // 儲存至本地快取
-        localStorage.setItem('assistive_data_backup', JSON.stringify(processed));
+        try { localStorage.setItem('assistive_data_backup', JSON.stringify(processed)); } catch(e){}
         return processed;
       };
 
-      // 封裝一包專門讀取遠端試算表資料的函式 (連網同步)
       const fetchRemoteData = (isManual = false) => {
         if (isManual) setIsSyncing(true);
+        if (typeof Papa === 'undefined') {
+            if (isManual) { setIsSyncing(false); alert("系統套件載入不全，請檢查網路。"); }
+            loadFromBackup();
+            return;
+        }
+        
         const csvUrl = "data.csv?v=" + new Date().getTime();
-
         Papa.parse(csvUrl, {
           download: true, header: true, skipEmptyLines: true,
           complete: (results) => {
@@ -115,9 +131,8 @@
               if (results.data.length === 0) throw new Error("CSV 無資料");
               const processed = processRawData(results.data);
               
-              // 記錄同步時間
               const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
-              localStorage.setItem('assistive_sync_time', nowStr);
+              try { localStorage.setItem('assistive_sync_time', nowStr); } catch(e){}
               
               setDataList(processed);
               setLastSyncTime(nowStr);
@@ -149,29 +164,36 @@
       };
 
       const loadFromBackup = () => {
-        const backup = localStorage.getItem('assistive_data_backup');
-        if (backup) {
-          console.log("正在使用離線快取資料");
-          const offlineData = JSON.parse(backup);
-          setDataList(offlineData);
-          setSelectedItem(offlineData[0]);
-          setLoading(false);
-        } else {
-          setError("讀取失敗且無本地備份。");
+        try {
+          const backup = localStorage.getItem('assistive_data_backup');
+          if (backup) {
+            console.log("正在使用離線快取資料");
+            const offlineData = JSON.parse(backup);
+            setDataList(offlineData);
+            setSelectedItem(offlineData[0]);
+            setLoading(false);
+          } else {
+            setError("無本地備份資料，請在有網路時按下同步按鈕。");
+            setLoading(false);
+          }
+        } catch(e) {
+          setError("讀取備份資料發生錯誤。");
           setLoading(false);
         }
       };
 
-      // 【初始化調整】100% 優先讀取本地 LocalStorage 快取
       useEffect(() => {
-        const backup = localStorage.getItem('assistive_data_backup');
-        if (backup) {
-          const offlineData = JSON.parse(backup);
-          setDataList(offlineData);
-          setSelectedItem(offlineData[0]);
-          setLoading(false);
-        } else {
-          // 只有完全沒歷史快取的初次安裝用戶，才會被迫自動同步第一次
+        try {
+          const backup = localStorage.getItem('assistive_data_backup');
+          if (backup) {
+            const offlineData = JSON.parse(backup);
+            setDataList(offlineData);
+            setSelectedItem(offlineData[0]);
+            setLoading(false);
+          } else {
+            fetchRemoteData(false);
+          }
+        } catch(e) {
           fetchRemoteData(false);
         }
       }, []);
@@ -189,7 +211,7 @@
       }, [searchTerm, selectedCategory, dataList]);
 
       if (loading) return <div className="h-screen flex items-center justify-center text-teal-700 font-bold text-lg">資料讀取中...</div>;
-      if (error) return <div className="h-screen flex items-center justify-center text-red-500 font-bold">⚠️ {error}</div>;
+      if (error) return <div className="h-screen flex flex-col items-center justify-center text-red-500 font-bold p-6 text-center"><AlertTriangle className="w-12 h-12 mb-4" />{error}<button onClick={() => fetchRemoteData(true)} className="mt-4 px-4 py-2 bg-teal-600 text-white rounded">嘗試重新連線</button></div>;
 
       return (
         <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden text-left">
@@ -198,13 +220,12 @@
           <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="hidden lg:block p-5 border-b bg-teal-700 text-white shadow-sm">
               <h1 className="text-lg font-bold">身障輔具&無障礙補助查詢</h1>
-              <div class="flex justify-between items-center mt-1">
+              <div className="flex justify-between items-center mt-1">
                 <div className="text-[10px] opacity-70">112年最新基準表 (同步: {lastSyncTime})</div>
-                {/* 🖥️ 電腦版手動同步按鈕 */}
                 <button 
                   onClick={() => fetchRemoteData(true)} 
                   disabled={isSyncing}
-                  className={`px-1.5 py-0.5 text-[10px] bg-teal-600 border border-teal-500 rounded hover:bg-teal-500 font-bold disabled:opacity-50 transition-all`}
+                  className={`px-1.5 py-0.5 text-[10px] bg-teal-600 border border-teal-500 rounded hover:bg-teal-500 text-white font-bold disabled:opacity-50 transition-all`}
                 >
                   {isSyncing ? "中..." : "🔄 同步"}
                 </button>
@@ -239,13 +260,12 @@
           </aside>
 
           <main className="flex-1 flex flex-col h-full overflow-hidden w-full bg-gray-100">
-            {/* 📱 手機版 Header (整合手動同步按鈕與載入動畫) */}
             <div className="lg:hidden bg-teal-700 border-b p-4 flex items-center justify-between shadow-md z-10 text-white">
               <div className="truncate mr-2 flex flex-col">
                 <h1 className="text-base font-bold tracking-tight">身障輔具&無障礙補助查詢(112年)</h1>
                 <span className="text-[9px] opacity-75">最後同步: {lastSyncTime}</span>
               </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button 
                   onClick={() => fetchRemoteData(true)} 
                   disabled={isSyncing}
