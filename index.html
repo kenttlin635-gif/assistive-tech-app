@@ -131,8 +131,10 @@
             loadFromBackup();
             return;
         }
-        
-        const csvUrl = "data.csv?v=" + new Date().getTime();
+
+        // 請將下方的網址替換成你 sync.yml 裡面真實的 Google Sheet 網址
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/1VS7Kmgx-Zh055FHt-0lCHQwBUndI5E9Klzkrr8YPzbY/pub?output=csv&v=" + new Date().getTime();
+      
         Papa.parse(csvUrl, {
           download: true, header: true, skipEmptyLines: true,
           complete: (results) => {
