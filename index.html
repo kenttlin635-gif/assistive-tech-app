@@ -38,7 +38,6 @@
       .bg-number-watermark { font-size: 10rem; right: 2rem; } 
     }
     
-    /* 載入動畫設定 */
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 
@@ -68,7 +67,7 @@
         setTimeout(() => {
           const btn = document.getElementById('rescueBtn');
           if(btn) btn.style.display = 'block';
-        }, 4000); // 4秒後顯示按鈕
+        }, 4000);
       </script>
     </div>
   </div>
@@ -132,9 +131,9 @@
             return;
         }
 
-        // 請將下方的網址替換成你 sync.yml 裡面真實的 Google Sheet 網址
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/1VS7Kmgx-Zh055FHt-0lCHQwBUndI5E9Klzkrr8YPzbY/pub?output=csv&v=" + new Date().getTime();
-      
+        // 🔥 【修正版網址】直接使用 Google Sheets 的匯出格式 (不會有 404 問題)
+        const csvUrl = "https://docs.google.com/spreadsheets/d/1VS7Kmgx-Zh055FHt-0lCHQwBUndI5E9Klzkrr8YPzbY/export?format=csv&v=" + new Date().getTime();
+        
         Papa.parse(csvUrl, {
           download: true, header: true, skipEmptyLines: true,
           complete: (results) => {
